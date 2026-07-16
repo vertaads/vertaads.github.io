@@ -1,0 +1,1940 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070908">
+  <title>VERTA | CRM Comercial</title>
+  <style>
+    :root {
+      --black: #070908;
+      --black-2: #0c100e;
+      --surface: #111713;
+      --surface-2: #161d18;
+      --surface-3: #1b241e;
+      --line: #2a352e;
+      --line-soft: #202923;
+      --text: #f4f7f5;
+      --muted: #9ba79f;
+      --muted-2: #707d74;
+      --green: #76e69b;
+      --green-2: #b8f3cb;
+      --green-dark: #12331f;
+      --white: #ffffff;
+      --amber: #f5bf63;
+      --red: #ff8f87;
+      --blue: #93c5fd;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { background: var(--black); }
+    body { margin: 0; min-width: 320px; background: var(--black); color: var(--text); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+    .sidebar {
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 25px 15px 16px;
+      background: #080b09;
+      border-right: 1px solid var(--line-soft);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-height: 64px;
+      margin: 0 0 15px;
+      padding: 0 7px 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+    }
+    .brand-logo { display: block; width: 196px; max-width: 100%; height: auto; }
+
+    .nav { display: grid; gap: 4px; }
+    .nav-section { margin: 20px 9px 7px; color: var(--muted-2); font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .nav button {
+      width: 100%;
+      min-height: 41px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: #b8c2bc;
+      background: transparent;
+      text-align: left;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .nav button:hover { background: #111713; color: var(--white); }
+    .nav button.active { color: var(--green); background: var(--green-dark); border-color: #245336; }
+    .nav-mark { width: 8px; height: 8px; flex: 0 0 8px; border: 1px solid currentColor; border-radius: 50%; opacity: .92; }
+    .nav button.active .nav-mark { background: var(--green); }
+    .sidebar-footer { margin-top: auto; padding: 15px 9px 2px; color: var(--muted-2); border-top: 1px solid var(--line-soft); font-size: 11px; line-height: 1.55; }
+
+    main { min-width: 0; padding: 26px 30px 42px; }
+    .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+    .eyebrow { margin: 0 0 7px; color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+    .page-title { margin: 0; color: var(--white); font-size: clamp(25px, 3vw, 34px); line-height: 1.05; letter-spacing: 0; }
+    .page-subtitle { max-width: 680px; margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .top-actions, .button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .top-actions { justify-content: flex-end; }
+    .btn {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .btn:hover { border-color: #49584e; background: var(--surface-2); }
+    .btn.primary { border-color: var(--green); color: #07100a; background: var(--green); }
+    .btn.primary:hover { border-color: var(--green-2); background: var(--green-2); }
+    .btn.ghost { color: var(--muted); background: transparent; }
+    .btn.danger { color: var(--red); }
+    .btn.small { min-height: 31px; padding: 5px 8px; font-size: 12px; }
+    .btn.square { width: 32px; padding: 0; display: inline-grid; place-items: center; }
+
+    .grid { display: grid; gap: 14px; }
+    .grid > * { min-width: 0; }
+    .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 14px; }
+    .two-col { grid-template-columns: minmax(0, 1.35fr) minmax(315px, .85fr); }
+    .two-equal { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; }
+    .card.inset { background: var(--black-2); }
+    .card-pad { padding: 17px; }
+    .metric { position: relative; min-height: 126px; padding: 17px; overflow: hidden; }
+    .metric::before { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--green); content: ""; }
+    .metric.warn::before { background: var(--amber); }
+    .metric.red::before { background: var(--red); }
+    .metric-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .metric strong { display: block; margin-top: 12px; color: var(--white); font-size: 27px; line-height: 1; letter-spacing: 0; }
+    .metric small { display: block; margin-top: 8px; color: var(--muted-2); font-size: 12px; line-height: 1.35; }
+
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .section-head h2, .section-head h3 { margin: 0; font-size: 16px; letter-spacing: 0; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .section-kicker { margin: 0 0 5px; color: var(--green); font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+
+    .quick-capture { padding: 18px; border-color: #2b593a; background: #0d1710; }
+    .quick-grid { display: grid; grid-template-columns: 1.05fr 1.05fr .9fr .85fr auto; gap: 9px; align-items: end; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field label { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .25px; }
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #0b100d;
+      font-size: 13px;
+    }
+    input::placeholder, textarea::placeholder { color: #657067; }
+    select { appearance: auto; }
+    textarea { min-height: 94px; resize: vertical; line-height: 1.45; }
+    .full { grid-column: 1 / -1; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+
+    .list { display: grid; gap: 1px; }
+    .list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+    .list-item:first-child { padding-top: 0; }
+    .list-item:last-child { padding-bottom: 0; border-bottom: 0; }
+    .item-title { margin: 0; color: var(--white); font-size: 13px; font-weight: 800; line-height: 1.35; }
+    .item-meta { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .item-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar { width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border: 1px solid #3a5140; border-radius: 50%; color: var(--green); background: #122119; font-size: 11px; font-weight: 900; }
+    .avatar.lead { color: var(--amber); border-color: #574728; background: #201b0e; }
+
+    .tag { display: inline-flex; align-items: center; min-height: 22px; padding: 3px 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--black-2); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .tag.green { border-color: #315b3d; color: var(--green); background: #102417; }
+    .tag.amber { border-color: #5d4a26; color: var(--amber); background: #241c0c; }
+    .tag.red { border-color: #65342e; color: var(--red); background: #2a100e; }
+    .tag.blue { border-color: #304b65; color: var(--blue); background: #0d1c2a; }
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .empty { padding: 29px 18px; border: 1px dashed #3a463e; border-radius: 6px; color: var(--muted); background: var(--black-2); font-size: 13px; line-height: 1.55; text-align: center; }
+    .empty strong { display: block; margin-bottom: 4px; color: var(--text); font-size: 13px; }
+
+    .bar-list { display: grid; gap: 12px; }
+    .bar-row { display: grid; grid-template-columns: 115px minmax(0, 1fr) 54px; gap: 10px; align-items: center; color: var(--muted); font-size: 12px; }
+    .bar { height: 7px; overflow: hidden; background: #0a0e0c; border: 1px solid var(--line-soft); border-radius: 999px; }
+    .bar i { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+    .bar-row b { color: var(--text); font-size: 12px; text-align: right; }
+    .activity { padding-left: 15px; border-left: 2px solid #34533c; }
+    .activity + .activity { margin-top: 13px; }
+    .activity p { margin: 0; color: var(--text); font-size: 12px; line-height: 1.45; }
+    .activity small { display: block; margin-top: 4px; color: var(--muted-2); font-size: 11px; }
+
+    .filters { display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filters .field { min-width: 190px; flex: 1 1 220px; }
+    .filters .field.compact { flex: 0 1 180px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 760px; border-collapse: collapse; }
+    th, td { padding: 11px 9px; border-bottom: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; text-align: left; vertical-align: middle; }
+    th { color: var(--muted-2); font-size: 10px; font-weight: 800; letter-spacing: .75px; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    td strong { color: var(--text); font-size: 13px; }
+    td small { color: var(--muted-2); font-size: 11px; }
+
+    .kanban { display: grid; grid-template-columns: repeat(5, minmax(245px, 1fr)); gap: 12px; overflow-x: auto; padding: 0 0 11px; }
+    .stage { display: flex; flex-direction: column; min-height: 610px; overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: #0c110e; }
+    .stage-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 13px; border-bottom: 1px solid var(--line); }
+    .stage-head strong { display: block; color: var(--white); font-size: 13px; }
+    .stage-head small { display: block; margin-top: 4px; color: var(--muted-2); font-size: 11px; }
+    .stage-body { display: grid; align-content: start; gap: 9px; min-height: 540px; padding: 9px; }
+    .deal-card { padding: 12px; border: 1px solid #2b382f; border-left: 3px solid var(--green); border-radius: 6px; background: var(--surface); }
+    .deal-card[data-priority="Alta"] { border-left-color: var(--red); }
+    .deal-card[data-priority="Média"] { border-left-color: var(--amber); }
+    .deal-card[data-priority="Baixa"] { border-left-color: var(--green); }
+    .deal-card h4 { margin: 0; color: var(--white); font-size: 13px; line-height: 1.35; }
+    .deal-card p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .deal-card .tag-row { margin-top: 10px; }
+    .deal-card .card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 11px; }
+    .drop-hint { padding: 12px; color: var(--muted-2); border: 1px dashed #334037; border-radius: 5px; font-size: 11px; text-align: center; }
+
+    .lead-board { display: grid; gap: 10px; }
+    .lead-card { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(150px, .7fr) minmax(140px, .6fr) auto; gap: 14px; align-items: center; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .lead-card:hover { border-color: #3d5043; }
+    .lead-card h3 { margin: 0; color: var(--white); font-size: 14px; }
+    .lead-card p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .lead-card .info-label { color: var(--muted-2); font-size: 10px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
+    .lead-card .info-value { display: block; margin-top: 4px; color: var(--text); font-size: 12px; line-height: 1.35; }
+
+    .agenda-tabs { display: flex; gap: 7px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .tab { min-height: 34px; padding: 6px 5px; color: var(--muted); border: 0; border-bottom: 2px solid transparent; background: transparent; font-size: 12px; font-weight: 800; }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .task-row { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line-soft); }
+    .task-row:last-child { border-bottom: 0; }
+    .date-pill { display: grid; gap: 2px; }
+    .date-pill b { color: var(--white); font-size: 12px; }
+    .date-pill span { color: var(--muted-2); font-size: 10px; text-transform: uppercase; }
+    .task-row.done .item-title { color: var(--muted); text-decoration: line-through; }
+    .task-row.done { opacity: .62; }
+
+    .prospecting-form { padding: 18px; border-color: #325d3e; background: #0d1810; }
+    .prospecting-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+    .process { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--line); }
+    .process-step { min-height: 135px; padding: 16px; background: var(--surface); }
+    .process-step b { display: block; color: var(--green); font-size: 11px; letter-spacing: .8px; text-transform: uppercase; }
+    .process-step h3 { margin: 13px 0 0; color: var(--white); font-size: 14px; }
+    .process-step p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .message-box { display: grid; gap: 10px; }
+    .message-box textarea { min-height: 154px; }
+    .automation-list { display: grid; gap: 9px; }
+    .automation { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .automation h3 { margin: 0; color: var(--white); font-size: 13px; }
+    .automation p { margin: 5px 0 0; max-width: 660px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .switch { position: relative; width: 43px; height: 24px; flex: 0 0 43px; }
+    .switch input { width: 1px; height: 1px; opacity: 0; position: absolute; }
+    .switch span { position: absolute; inset: 0; border: 1px solid #455147; border-radius: 999px; background: #0a0f0c; transition: background .16s ease, border-color .16s ease; }
+    .switch span::after { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #9ba79f; content: ""; transition: transform .16s ease, background .16s ease; }
+    .switch input:checked + span { border-color: var(--green); background: var(--green-dark); }
+    .switch input:checked + span::after { transform: translateX(19px); background: var(--green); }
+    .notice { padding: 13px; border: 1px solid #405044; border-radius: 6px; color: var(--muted); background: #0b100d; font-size: 12px; line-height: 1.5; }
+    .notice b { color: var(--green); }
+
+    .research-shell { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .65fr); gap: 14px; margin-top: 14px; }
+    .map-frame { width: 100%; height: 540px; display: block; border: 0; border-radius: 5px; background: #0a0e0c; }
+    .map-empty { height: 540px; display: grid; place-items: center; padding: 28px; border: 1px dashed #3a463e; border-radius: 5px; color: var(--muted); background: #0a0e0c; text-align: center; }
+    .research-checklist { display: grid; gap: 9px; }
+    .check-row { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 9px; align-items: start; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .check-row input { width: 16px; min-height: 16px; margin: 1px 0 0; accent-color: var(--green); }
+
+    .cezar-header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 13px; align-items: center; padding: 17px; border-color: #326343; background: #0c1911; }
+    .cezar-avatar { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--green); border-radius: 50%; color: #07100a; background: var(--green); font-size: 14px; font-weight: 900; }
+    .cezar-header h2 { margin: 0; color: var(--white); font-size: 16px; }
+    .cezar-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .status-line { display: inline-flex; align-items: center; gap: 7px; color: var(--green-2); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .assistant-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(330px, .85fr); gap: 14px; margin-top: 14px; }
+    .assistant-form { display: grid; gap: 13px; }
+    .assistant-form textarea { min-height: 132px; }
+    .recommendation { padding: 13px; border-left: 3px solid var(--green); color: var(--muted); background: #0b120e; font-size: 12px; line-height: 1.5; }
+    .recommendation strong { display: block; margin-bottom: 4px; color: var(--white); }
+    .message-preview { min-height: 150px; padding: 14px; border: 1px solid var(--line); border-radius: 5px; color: var(--text); background: #090d0b; font-size: 13px; line-height: 1.58; white-space: pre-wrap; }
+    .message-queue { display: grid; gap: 8px; }
+    .message-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .message-item h3 { margin: 0; color: var(--white); font-size: 13px; }
+    .message-item p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .message-item .item-actions { max-width: 300px; }
+    .approval-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .approval-meta div { padding: 11px; border: 1px solid var(--line-soft); border-radius: 5px; background: #090d0b; }
+    .approval-meta span { display: block; color: var(--muted-2); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .approval-meta strong { display: block; margin-top: 5px; color: var(--text); font-size: 12px; }
+
+    .material-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .material-tabs .tab { white-space: nowrap; }
+    .knowledge-hero { padding: 19px; border-color: #315f3f; background: #0d1710; }
+    .knowledge-hero h2 { max-width: 780px; margin: 0; color: var(--white); font-size: 20px; line-height: 1.25; }
+    .knowledge-hero p { max-width: 850px; margin: 9px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .principle-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 14px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--line); }
+    .principle { min-height: 132px; padding: 15px; background: var(--surface); }
+    .principle b { color: var(--green); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+    .principle h3 { margin: 11px 0 0; color: var(--white); font-size: 13px; }
+    .principle p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .service-card { min-height: 245px; display: flex; flex-direction: column; padding: 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .service-card h3 { margin: 10px 0 0; color: var(--white); font-size: 14px; }
+    .service-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .service-card ul { margin: 12px 0 0; padding-left: 17px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+    .service-card .tag-row { margin-top: auto; padding-top: 13px; }
+    .funnel { display: grid; grid-template-columns: repeat(7, minmax(150px, 1fr)); gap: 1px; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--line); }
+    .funnel-step { min-height: 205px; padding: 15px; background: var(--surface); }
+    .funnel-step b { color: var(--green); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+    .funnel-step h3 { margin: 12px 0 0; color: var(--white); font-size: 13px; }
+    .funnel-step p { margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .script-block { padding: 15px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .script-block h3 { margin: 0; color: var(--white); font-size: 13px; }
+    .script-block p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; white-space: pre-wrap; }
+    .source-note { color: var(--muted-2); font-size: 11px; line-height: 1.5; }
+
+    .content-hero { padding: 19px; border-color: #315f3f; background: #0d1710; }
+    .content-hero .section-head { flex-wrap: wrap; }
+    .content-hero .section-head > div:first-child { min-width: 0; flex: 1 1 560px; }
+    .content-hero .section-head > .button-row { flex: 0 1 auto; align-self: flex-start; }
+    .content-hero h2 { max-width: 820px; margin: 0; color: var(--white); font-size: 20px; line-height: 1.3; }
+    .content-hero p { max-width: 860px; margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .content-week { display: grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap: 9px; overflow-x: auto; padding-bottom: 8px; }
+    .content-day { min-height: 225px; padding: 14px; border: 1px solid var(--line); border-top: 2px solid var(--green); border-radius: 6px; background: var(--surface); }
+    .content-day b { color: var(--green); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+    .content-day h3 { margin: 10px 0 0; color: var(--white); font-size: 13px; line-height: 1.4; }
+    .content-day p { margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .content-day .tag-row { margin-top: 11px; }
+    .pinned-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .pinned-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; min-height: 178px; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .pinned-cover { width: 112px; aspect-ratio: 4 / 5; display: grid; place-items: center; border: 1px solid #3c5b45; border-radius: 5px; color: var(--white); background: #0a100c; font-size: 27px; font-weight: 900; }
+    .pinned-card h3 { margin: 0; color: var(--white); font-size: 14px; }
+    .pinned-card p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .pinned-card .item-actions { justify-content: flex-start; margin-top: 12px; }
+    .content-list { display: grid; gap: 8px; }
+    .content-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) minmax(140px, auto); gap: 13px; align-items: center; padding: 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .content-date { color: var(--white); font-size: 12px; font-weight: 800; }
+    .content-date small { display: block; margin-top: 4px; color: var(--muted-2); font-size: 10px; font-weight: 600; }
+    .content-row h3 { margin: 0; color: var(--white); font-size: 13px; line-height: 1.4; }
+    .content-row p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .content-row .item-actions { max-width: 330px; }
+    .content-cezar { padding: 17px; border-left: 3px solid var(--green); background: #0c1710; }
+    .content-cezar h3 { margin: 0; color: var(--white); font-size: 14px; }
+    .content-cezar p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .modal { position: fixed; inset: 0; z-index: 50; display: none; align-items: flex-start; justify-content: center; overflow: auto; padding: 25px 16px; background: rgba(0, 0, 0, .74); }
+    .modal.open { display: flex; }
+    .modal-panel { width: min(880px, 100%); margin: auto; border: 1px solid #354137; border-radius: 7px; background: #0d120f; }
+    .modal-head, .modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 19px; }
+    .modal-head { border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; color: var(--white); font-size: 17px; }
+    .modal-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .modal-body { display: grid; gap: 14px; padding: 19px; }
+    .modal-foot { flex-wrap: wrap; border-top: 1px solid var(--line); }
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 70; display: none; max-width: min(390px, calc(100vw - 36px)); padding: 12px 14px; border: 1px solid #3a6747; border-radius: 6px; color: var(--green-2); background: #102217; font-size: 13px; font-weight: 700; }
+    .toast.show { display: block; }
+    .mobile-bar { display: none; }
+
+    .auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #070908; }
+    .auth-panel { width: min(440px, 100%); padding: 28px; border: 1px solid #2e3831; border-top: 2px solid var(--green); border-radius: 7px; background: #0d120f; }
+    .auth-brand { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .auth-brand img { display: block; width: 142px; height: auto; }
+    .auth-badge { color: var(--green-2); font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+    .auth-copy { margin: 24px 0 20px; }
+    .auth-copy h1 { margin: 0; color: var(--white); font-size: 24px; line-height: 1.25; }
+    .auth-copy p { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .auth-form { display: grid; gap: 14px; }
+    .auth-form .btn { width: 100%; min-height: 43px; }
+    .auth-secondary { width: 100%; margin-top: 9px; border: 0; color: var(--muted); background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
+    .auth-secondary:hover { color: var(--white); }
+    .auth-status { min-height: 20px; margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .auth-status.error { color: #ff9b9b; }
+    .auth-status.success { color: var(--green-2); }
+    .auth-migration { margin-top: 18px; padding: 12px; border: 1px solid #2f4937; border-radius: 6px; color: var(--muted); background: #0b160f; font-size: 11px; line-height: 1.5; }
+    .sync-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 35px; padding: 0 11px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); background: #0d120f; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .sync-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #8b948e; }
+    .sync-chip[data-tone="success"]::before { background: var(--green); }
+    .sync-chip[data-tone="syncing"]::before { background: #e8bf63; }
+    .sync-chip[data-tone="error"]::before { background: #e86666; }
+    .sync-chip:hover { color: var(--white); border-color: #3b4b40; }
+
+    @media (max-width: 1120px) {
+      .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quick-grid .btn { width: 100%; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .two-col { grid-template-columns: 1fr; }
+      .research-shell, .assistant-grid { grid-template-columns: 1fr; }
+      .principle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pinned-grid { grid-template-columns: 1fr; }
+      .lead-card { grid-template-columns: minmax(0, 1fr) minmax(130px, .6fr) auto; }
+      .lead-card .lead-extra { display: none; }
+    }
+    @media (max-width: 840px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; z-index: 40; width: 268px; height: 100vh; transform: translateX(-105%); transition: transform .18s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 10px 13px; border-bottom: 1px solid var(--line); background: #080b09; }
+      .mobile-brand { display: flex; align-items: center; justify-content: center; }
+      .mobile-brand img { display: block; width: 118px; max-width: 31vw; height: auto; }
+      main { padding: 20px 15px 34px; }
+      .topbar { flex-direction: column; }
+      .top-actions { justify-content: flex-start; }
+      .process { grid-template-columns: 1fr; }
+      .prospecting-grid { grid-template-columns: 1fr; }
+      .map-frame, .map-empty { height: 450px; }
+      .lead-card { grid-template-columns: 1fr; gap: 10px; }
+      .lead-card .lead-extra { display: block; }
+      .lead-card .item-actions { justify-content: flex-start; }
+    }
+    @media (max-width: 560px) {
+      .auth-shell { padding: 14px; }
+      .auth-panel { padding: 21px 18px; }
+      .auth-brand img { width: 126px; }
+      main { padding: 16px 12px 29px; }
+      .page-title { font-size: 27px; }
+      .metrics, .two-equal, .three-col { grid-template-columns: 1fr; }
+      .quick-grid, .form-grid { grid-template-columns: 1fr; }
+      .cezar-header { grid-template-columns: auto minmax(0, 1fr); }
+      .cezar-header .status-line { grid-column: 1 / -1; }
+      .principle-grid, .service-grid { grid-template-columns: 1fr; }
+      .approval-meta { grid-template-columns: 1fr; }
+      .message-item { grid-template-columns: 1fr; }
+      .message-item .item-actions { justify-content: flex-start; }
+      .pinned-card { grid-template-columns: 88px minmax(0, 1fr); }
+      .pinned-cover { width: 88px; }
+      .content-row { grid-template-columns: 1fr; }
+      .content-row .item-actions { justify-content: flex-start; }
+      .top-actions { width: 100%; }
+      .top-actions .btn { flex: 1; }
+      .section-head { flex-direction: column; }
+      .content-hero .section-head > div:first-child { flex: 0 1 auto; }
+      .section-head .btn { width: 100%; }
+      .task-row { grid-template-columns: 64px minmax(0, 1fr); }
+      .task-row .item-actions { grid-column: 1 / -1; justify-content: flex-start; }
+      .automation { align-items: flex-start; }
+      .modal { padding: 10px; }
+      .modal-head, .modal-foot, .modal-body { padding-left: 14px; padding-right: 14px; }
+      .modal-foot > .button-row { width: 100%; }
+      .modal-foot > .button-row .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <section class="auth-shell" id="authShell">
+    <div class="auth-panel">
+      <div class="auth-brand">
+        <img src="verta-ads-logo-transparent.png" alt="VERTA Ads">
+        <span class="auth-badge">CRM seguro</span>
+      </div>
+      <div class="auth-copy">
+        <h1 id="authTitle">Entrar no CRM</h1>
+        <p id="authSubtitle">Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.</p>
+      </div>
+      <form class="auth-form" id="authForm">
+        <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" name="email" type="email" autocomplete="username" required placeholder="seuemail@exemplo.com"></div>
+        <div class="field"><label for="authPassword">Senha</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="No mínimo 8 caracteres"></div>
+        <button class="btn primary" id="authSubmit" type="submit">Entrar</button>
+      </form>
+      <button class="auth-secondary" type="button" data-action="toggle-auth-mode" id="authToggle">Primeiro acesso? Criar conta</button>
+      <button class="auth-secondary" type="button" data-action="backup">Baixar cópia dos dados deste navegador</button>
+      <div class="auth-status" id="authStatus" role="status"></div>
+      <div class="auth-migration" id="authMigration">Os dados deste navegador serão preservados e enviados para sua conta no primeiro acesso.</div>
+    </div>
+  </section>
+
+  <header class="mobile-bar" id="mobileBar" hidden>
+    <button class="btn small square" type="button" data-action="toggle-menu" aria-label="Abrir menu" title="Abrir menu">≡</button>
+    <div class="mobile-brand"><img src="verta-ads-logo-transparent.png" alt="VERTA Ads"></div>
+    <button class="btn small primary" type="button" data-action="new-lead">+ Contato</button>
+  </header>
+
+  <div class="app" id="crmApp" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand" aria-label="VERTA Ads CRM">
+        <img class="brand-logo" src="verta-ads-logo-transparent.png" alt="VERTA Ads">
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-footer">Sua operação comercial em um lugar: captar, qualificar, acompanhar e fechar.</div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <p class="eyebrow" id="viewEyebrow">Operação comercial</p>
+          <h1 class="page-title" id="viewTitle">Visão geral</h1>
+          <p class="page-subtitle" id="viewSubtitle">O que precisa de atenção para sua operação continuar andando.</p>
+        </div>
+        <div class="top-actions">
+          <button class="sync-chip" id="cloudStatusButton" type="button" data-action="sync-now" data-tone="syncing" title="Sincronizar agora">Preparando nuvem</button>
+          <button class="btn" type="button" data-action="export-csv">Exportar CSV</button>
+          <button class="btn" type="button" data-action="backup">Backup</button>
+          <button class="btn" type="button" data-action="logout">Sair</button>
+          <button class="btn primary" type="button" data-action="new-lead">+ Novo contato</button>
+        </div>
+      </div>
+      <div id="appView"></div>
+    </main>
+  </div>
+
+  <div class="modal" id="leadModal" aria-hidden="true">
+    <form class="modal-panel" id="leadForm">
+      <div class="modal-head">
+        <div><h2 id="leadModalTitle">Novo contato</h2><p>Entre com todo contato novo antes de colocá-lo no pipeline.</p></div>
+        <button class="btn small square" type="button" data-action="close-lead-modal" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id">
+        <div class="form-grid">
+          <div class="field"><label>Empresa ou nome *</label><input name="company" required placeholder="Ex.: Barbearia Central"></div>
+          <div class="field"><label>Nome do contato</label><input name="contact" placeholder="Ex.: Lucas"></div>
+          <div class="field"><label>WhatsApp</label><input name="whatsapp" inputmode="tel" placeholder="(16) 99999-9999"></div>
+          <div class="field"><label>E-mail</label><input name="email" type="email" placeholder="contato@empresa.com"></div>
+          <div class="field"><label>Instagram / perfil</label><input name="instagram" placeholder="@empresa"></div>
+          <div class="field"><label>Site</label><input name="website" type="url" placeholder="https://empresa.com.br"></div>
+          <div class="field"><label>Origem</label><select name="source"><option>Prospecção manual</option><option>Instagram</option><option>Indicação</option><option>Google Maps</option><option>Site</option><option>Tráfego pago</option><option>Evento</option><option>Outro</option></select></div>
+          <div class="field"><label>Segmento</label><input name="segment" placeholder="Ex.: Barbearia, clínica, restaurante"></div>
+          <div class="field"><label>Cidade / região</label><input name="city" placeholder="Ex.: Ribeirão Preto - SP"></div>
+          <div class="field"><label>Serviço de interesse</label><select name="interest"><option>Tráfego pago · Meta Ads</option><option>Tráfego pago · Google Ads</option><option>Tráfego pago · Meta + Google</option><option>Criação de landing page</option><option>Criação de CRM</option><option>Gerenciamento de perfil</option><option>Gerenciamento de perfil + tráfego</option><option>Organização comercial</option><option>Consultoria estratégica</option><option>A definir</option></select></div>
+          <div class="field"><label>Prioridade</label><select name="priority"><option>Média</option><option>Alta</option><option>Baixa</option></select></div>
+          <div class="field"><label>Base para contato</label><select name="contactBasis"><option>Não definida</option><option>Cliente / relação contratual</option><option>Lead que solicitou contato</option><option>Prospecção B2B avaliada</option><option>Não contatar</option></select></div>
+          <div class="field"><label>Status comercial</label><select name="status"><option>Novo</option><option>Em contato</option><option>Qualificado</option><option>Arquivado</option></select></div>
+          <div class="field full"><label>Contexto e observações</label><textarea name="notes" placeholder="O que você observou, necessidade provável, indicação ou informações da conversa."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn danger" type="button" id="deleteLeadBtn" data-action="delete-lead">Excluir contato</button>
+        <div class="button-row"><button class="btn" type="button" data-action="close-lead-modal">Cancelar</button><button class="btn primary" type="submit">Salvar contato</button></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal" id="dealModal" aria-hidden="true">
+    <form class="modal-panel" id="dealForm">
+      <div class="modal-head">
+        <div><h2 id="dealModalTitle">Nova oportunidade</h2><p>O pipeline deve conter contatos já qualificados.</p></div>
+        <button class="btn small square" type="button" data-action="close-deal-modal" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id">
+        <input type="hidden" name="leadId">
+        <div class="form-grid">
+          <div class="field"><label>Oportunidade *</label><input name="title" required placeholder="Ex.: Tráfego pago mensal"></div>
+          <div class="field"><label>Empresa *</label><input name="company" required placeholder="Ex.: Barbearia Central"></div>
+          <div class="field"><label>Contato principal</label><input name="contact" placeholder="Nome da pessoa"></div>
+          <div class="field"><label>WhatsApp</label><input name="whatsapp" inputmode="tel" placeholder="(16) 99999-9999"></div>
+          <div class="field"><label>E-mail</label><input name="email" type="email" placeholder="contato@empresa.com"></div>
+          <div class="field"><label>Origem</label><input name="source" placeholder="Instagram, indicação, Maps..."></div>
+          <div class="field"><label>Serviço</label><select name="service"><option>Tráfego pago · Meta Ads</option><option>Tráfego pago · Google Ads</option><option>Tráfego pago · Meta + Google</option><option>Criação de landing page</option><option>Criação de CRM</option><option>Gerenciamento de perfil</option><option>Gerenciamento de perfil + tráfego</option><option>Organização comercial</option><option>Consultoria estratégica</option><option>A definir</option><option>Outro</option></select></div>
+          <div class="field"><label>Etapa</label><select name="stage"></select></div>
+          <div class="field"><label>Prioridade</label><select name="priority"><option>Média</option><option>Alta</option><option>Baixa</option></select></div>
+          <div class="field"><label>Base para contato</label><select name="contactBasis"><option>Não definida</option><option>Cliente / relação contratual</option><option>Lead que solicitou contato</option><option>Prospecção B2B avaliada</option><option>Não contatar</option></select></div>
+          <div class="field"><label>Valor estimado</label><input name="value" type="number" min="0" step="50" placeholder="750"></div>
+          <div class="field"><label>Próxima ação em</label><input name="nextDate" type="date"></div>
+          <div class="field"><label>Próxima ação</label><input name="nextAction" placeholder="Ex.: chamar no WhatsApp"></div>
+          <div class="field full"><label>Notas e contexto</label><textarea name="notes" placeholder="Necessidade, objeções, valores conversados e próximos detalhes."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn danger" type="button" id="deleteDealBtn" data-action="delete-deal">Excluir oportunidade</button>
+        <div class="button-row"><button class="btn" type="button" data-action="close-deal-modal">Cancelar</button><button class="btn primary" type="submit">Salvar oportunidade</button></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal" id="taskModal" aria-hidden="true">
+    <form class="modal-panel" id="taskForm">
+      <div class="modal-head">
+        <div><h2 id="taskModalTitle">Nova tarefa</h2><p>Use para tarefas que não nascem automaticamente de uma oportunidade.</p></div>
+        <button class="btn small square" type="button" data-action="close-task-modal" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id">
+        <div class="form-grid">
+          <div class="field"><label>Tarefa *</label><input name="title" required placeholder="Ex.: enviar proposta"></div>
+          <div class="field"><label>Data *</label><input name="dueDate" type="date" required></div>
+          <div class="field"><label>Relacionar com contato</label><select name="relatedId"></select></div>
+          <div class="field"><label>Status</label><select name="done"><option value="false">Pendente</option><option value="true">Concluída</option></select></div>
+          <div class="field full"><label>Observação</label><textarea name="notes" placeholder="Detalhes importantes para realizar essa tarefa."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn danger" type="button" id="deleteTaskBtn" data-action="delete-task">Excluir tarefa</button>
+        <div class="button-row"><button class="btn" type="button" data-action="close-task-modal">Cancelar</button><button class="btn primary" type="submit">Salvar tarefa</button></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal" id="contentModal" aria-hidden="true">
+    <form class="modal-panel" id="contentForm">
+      <div class="modal-head">
+        <div><h2 id="contentModalTitle">Novo conteúdo</h2><p>Planeje a peça e deixe o Cezar preparar o primeiro rascunho.</p></div>
+        <button class="btn small square" type="button" data-action="close-content-modal" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id">
+        <input type="hidden" name="pinnedWord">
+        <div class="form-grid">
+          <div class="field full"><label>Título ou ideia *</label><input name="title" required placeholder="Ex.: por que seus leads somem depois do primeiro contato"></div>
+          <div class="field"><label>Formato</label><select name="format"><option>Reel</option><option>Carrossel</option><option>Post estático</option><option>Stories</option></select></div>
+          <div class="field"><label>Pilar editorial</label><select name="pillar"><option>Diagnóstico</option><option>Educação</option><option>Bastidores</option><option>Método VERTA</option><option>Prova</option><option>Oferta</option><option>Opinião</option><option>Posicionamento</option></select></div>
+          <div class="field"><label>Data de publicação</label><input name="publishDate" type="date"></div>
+          <div class="field"><label>Horário</label><input name="publishTime" type="time"></div>
+          <div class="field"><label>Status</label><select name="status"><option>Ideia</option><option>Roteiro</option><option>Produção</option><option>Pronto</option><option>Agendado</option><option>Publicado</option></select></div>
+          <label class="check-row" style="align-self:end"><input type="checkbox" name="pinned" value="true"><span>Este conteúdo faz parte dos três posts fixados do perfil.</span></label>
+          <div class="field full"><label>Gancho</label><textarea name="hook" placeholder="A primeira frase ou capa que precisa parar a pessoa."></textarea></div>
+          <div class="field full"><label>Roteiro / estrutura</label><textarea name="script" placeholder="Estrutura do Reel ou sequência de slides."></textarea></div>
+          <div class="field full"><label>Legenda</label><textarea name="caption" placeholder="Legenda preparada para revisão."></textarea></div>
+          <div class="field"><label>CTA</label><input name="cta" placeholder="Ex.: envie DIAGNÓSTICO no direct"></div>
+          <div class="field"><label>Stories de apoio</label><input name="storyPrompt" placeholder="Enquete, bastidor ou caixa de perguntas"></div>
+          <div class="field full"><label>Observações</label><textarea name="notes" placeholder="Referências, cenas, material necessário e ajustes."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn danger" type="button" id="deleteContentBtn" data-action="delete-content">Excluir conteúdo</button>
+        <div class="button-row"><button class="btn" type="button" data-action="generate-content-form">Cezar: gerar rascunho</button><button class="btn" type="button" data-action="close-content-modal">Cancelar</button><button class="btn primary" type="submit">Salvar conteúdo</button></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal" id="confirmModal" aria-hidden="true">
+    <div class="modal-panel" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <div class="modal-head">
+        <div><h2 id="confirmModalTitle">Confirmar exclusão</h2><p id="confirmModalText">Esta ação não pode ser desfeita.</p></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" type="button" data-action="close-confirm-modal">Cancelar</button>
+        <button class="btn danger" type="button" data-action="confirm-delete">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="messageApprovalModal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="messageApprovalTitle">
+      <div class="modal-head">
+        <div><h2 id="messageApprovalTitle">Cezar pede sua autorização</h2><p>Nenhuma mensagem é aberta no WhatsApp sem sua revisão.</p></div>
+        <button class="btn small square" type="button" data-action="close-message-approval" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="approval-meta">
+          <div><span>Contato</span><strong id="approvalContact">-</strong></div>
+          <div><span>Finalidade</span><strong id="approvalIntent">-</strong></div>
+          <div><span>Base registrada</span><strong id="approvalBasis">-</strong></div>
+        </div>
+        <div class="field"><label>Mensagem que será levada ao WhatsApp</label><textarea id="approvalMessageText"></textarea></div>
+        <label class="check-row"><input type="checkbox" id="approvalPermission"><span>Revisei o destinatário e o texto. Confirmo que este contato pode receber esta mensagem e autorizo o Cezar a abrir o WhatsApp com ela preparada.</span></label>
+        <div class="notice"><b>Controle humano obrigatório:</b> o CRM abre a conversa com o texto preenchido. O envio final continua dependendo da sua ação no WhatsApp.</div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn danger" type="button" data-action="reject-message">Rejeitar rascunho</button>
+        <div class="button-row"><button class="btn" type="button" data-action="close-message-approval">Voltar</button><button class="btn primary" id="approveMessageBtn" type="button" data-action="approve-message" disabled>Aprovar e abrir WhatsApp</button></div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importInput" accept="application/json" hidden>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const STORAGE_KEY = "verta_crm_v2";
+    const SYNC_META_KEY = "verta_crm_sync_v1";
+    const SUPABASE_URL = "https://zvaqxftkdadxpbbgzwkl.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6_9BMrW_iefFE2goqd_y2g_4jB1ZjNt";
+    const stages = ["Diagnóstico", "Proposta enviada", "Negociação", "Fechado", "Perdido"];
+    const serviceCatalog = [
+      { name: "Tráfego pago · Meta Ads", group: "Aquisição", promise: "Gerar demanda em Instagram e Facebook com campanhas orientadas a uma oferta e a uma conversão mensurável.", fit: "Negócios que precisam criar procura, conversas ou vendas com alcance segmentado.", work: ["Diagnóstico de oferta e público", "Estrutura de campanhas e rastreamento", "Criativos, testes e otimização", "Leitura de CPL, CPA, qualidade e retorno"] },
+      { name: "Tráfego pago · Google Ads", group: "Aquisição", promise: "Capturar pessoas que já estão pesquisando pelo serviço e conduzi-las a um próximo passo claro.", fit: "Negócios com demanda ativa em pesquisa, intenção local ou serviços de necessidade recorrente.", work: ["Pesquisa de termos e intenção", "Campanhas de pesquisa e localização", "Página ou destino alinhado ao anúncio", "Otimização por conversão e qualidade"] },
+      { name: "Tráfego pago · Meta + Google", group: "Aquisição", promise: "Combinar geração de demanda com captura de intenção para cobrir diferentes momentos da decisão.", fit: "Operações com oferta validada, capacidade de atendimento e verba para testar dois canais.", work: ["Estratégia por papel de cada canal", "Rastreamento e metas compartilhadas", "Campanhas de prospecção e remarketing", "Análise integrada de aquisição"] },
+      { name: "Criação de landing page", group: "Conversão", promise: "Transformar uma oferta em uma página clara, rápida e preparada para gerar contatos ou vendas.", fit: "Campanhas, serviços ou ofertas que hoje dependem apenas do perfil social ou de mensagens soltas.", work: ["Estrutura e copy da oferta", "Design responsivo", "CTA, formulário ou WhatsApp", "Publicação, rastreamento e revisão"] },
+      { name: "Criação de CRM", group: "Comercial", promise: "Centralizar contatos, oportunidades, tarefas e histórico em um processo que a equipe consiga usar.", fit: "Negócios que perdem follow-ups, trabalham em planilhas dispersas ou não enxergam o funil.", work: ["Mapeamento do processo comercial", "Campos, etapas e permissões", "Agenda, automações e relatórios", "Implantação e rotina de uso"] },
+      { name: "Gerenciamento de perfil", group: "Presença", promise: "Manter o perfil organizado, coerente e útil para quem precisa entender e confiar no negócio.", fit: "Marcas que precisam de consistência de posicionamento e uma rotina profissional de conteúdo.", work: ["Pilares editoriais e calendário", "Copy, criação e publicação", "Organização de bio, destaques e prova", "Acompanhamento de sinais de interesse"] },
+      { name: "Gerenciamento de perfil + tráfego", group: "Aquisição + presença", promise: "Unir conteúdo de marca e distribuição paga para transformar presença digital em geração de demanda.", fit: "Negócios que precisam construir confiança e acelerar o alcance de ofertas ao mesmo tempo.", work: ["Estratégia de conteúdo e campanha", "Produção orgânica e criativos pagos", "Captação para página ou WhatsApp", "Rotina conjunta de análise e melhoria"] },
+      { name: "Organização comercial", group: "Vendas", promise: "Definir o caminho do lead, os responsáveis e os próximos passos para reduzir perdas por falta de acompanhamento.", fit: "Empresas que recebem contatos, mas não têm cadência, qualificação ou indicadores comerciais claros.", work: ["Desenho do funil e critérios", "Roteiros, cadências e follow-up", "CRM, tarefas e responsabilidades", "Indicadores e reunião de acompanhamento"] },
+      { name: "Consultoria estratégica", group: "Direção", promise: "Diagnosticar gargalos e transformar decisões de marketing e vendas em um plano priorizado e executável.", fit: "Negócios com equipe própria ou fornecedores que precisam de direção, revisão e tomada de decisão.", work: ["Diagnóstico e prioridades", "Plano de ação por impacto", "Revisões periódicas", "Orientação de campanha, oferta e comercial"] }
+    ];
+    const funnelPhases = [
+      { name: "Prospecção", goal: "Encontrar empresas com perfil e sinais de oportunidade.", exit: "Lead registrado com origem, segmento e motivo de fit." },
+      { name: "Primeiro contato", goal: "Abrir uma conversa contextual, curta e respeitosa.", exit: "Resposta, permissão para explicar ou encerramento registrado." },
+      { name: "Qualificação", goal: "Entender cenário, problema, prioridade e aderência.", exit: "Oportunidade real criada ou lead arquivado com motivo." },
+      { name: "Diagnóstico", goal: "Investigar objetivo, operação atual, capacidade e gargalo principal.", exit: "Problema e próximo passo definidos com o decisor." },
+      { name: "Proposta", goal: "Apresentar escopo, lógica, investimento e responsabilidade de cada lado.", exit: "Proposta recebida e data de retorno combinada." },
+      { name: "Negociação", goal: "Tratar dúvidas e ajustar somente o que melhora a viabilidade.", exit: "Aceite, perda registrada ou nova data objetiva." },
+      { name: "Fechamento", goal: "Formalizar, receber acessos e iniciar a entrega com clareza.", exit: "Contrato, pagamento, onboarding e rotina de acompanhamento." }
+    ];
+    const messageIntents = ["Primeiro contato", "Follow-up", "Cobrança", "Aviso", "Reativação", "Relacionamento"];
+    const contentStatuses = ["Ideia", "Roteiro", "Produção", "Pronto", "Agendado", "Publicado"];
+    const contentRoutine = [
+      { day: "Segunda", offset: 0, format: "Reel", pillar: "Diagnóstico", focus: "Problema real", feed: "Mostre um erro que custa leads ou vendas e explique o primeiro ajuste.", story: "Foco da semana, bastidor curto e enquete sobre a dor." },
+      { day: "Terça", offset: 1, format: "Carrossel", pillar: "Educação", focus: "Clareza prática", feed: "Ensine um conceito do serviço com exemplo simples e aplicação para negócio local.", story: "Resumo em três telas e caixa de perguntas." },
+      { day: "Quarta", offset: 2, format: "Reel", pillar: "Bastidores", focus: "Como trabalhamos", feed: "Mostre Heitor analisando, planejando ou executando uma etapa da VERTA.", story: "Making of, tela de trabalho e decisão tomada no dia." },
+      { day: "Quinta", offset: 3, format: "Carrossel", pillar: "Método VERTA", focus: "Método e prova", feed: "Explique processo, objeção, antes/depois ou aprendizado de um projeto.", story: "Pergunta frequente, resposta curta e prova disponível." },
+      { day: "Sexta", offset: 4, format: "Reel", pillar: "Opinião", focus: "Presença do fundador", feed: "Heitor dá uma opinião útil sobre marketing, vendas ou atendimento e fecha com CTA leve.", story: "Aprendizado da semana, resultado e convite para conversar." }
+    ];
+    const contentThemes = [
+      "tráfego pago no Meta para negócios locais",
+      "Google Ads e captura de demanda",
+      "landing pages que transformam clique em contato",
+      "CRM, follow-up e organização comercial",
+      "perfil profissional, conteúdo e confiança",
+      "integração entre marketing, atendimento e vendas"
+    ];
+
+    function defaultContentItems() {
+      const now = new Date().toISOString();
+      return [
+        {
+          id: "content_ver", title: "VER · Quem é a VERTA", format: "Carrossel", pillar: "Posicionamento", publishDate: "", publishTime: "", status: "Roteiro", pinned: true, pinnedWord: "VER",
+          hook: "Mais leads só ajudam quando existe clareza para transformar atenção em conversa e conversa em venda.",
+          script: "SLIDE 1 · VER\nMarketing precisa mostrar o que está impedindo o negócio de avançar.\n\nSLIDE 2 · PARA QUEM\nNegócios locais, prestadores de serviço e empresas que querem gerar mais oportunidades.\n\nSLIDE 3 · O PROBLEMA\nAnúncio sem oferta, perfil sem direção e lead sem acompanhamento viram esforço perdido.\n\nSLIDE 4 · A VERTA\nConectamos aquisição, presença digital e organização comercial.\n\nSLIDE 5 · NOSSA PROMESSA\nAjudar negócios a gerar mais oportunidades e organizar o caminho do lead até a venda.\n\nSLIDE 6 · CTA\nVeja os próximos dois posts fixados para entender como fazemos isso.",
+          caption: "A VERTA existe para negócios que não querem apenas aparecer, mas transformar marketing em oportunidades reais. Trabalhamos a aquisição, a conversão e o acompanhamento comercial como partes do mesmo caminho.",
+          cta: "Acompanhe os próximos posts fixados", storyPrompt: "Apresente a VERTA olhando para a câmera e pergunte qual é o maior gargalo: gerar leads ou acompanhar leads.", notes: "Primeiro post do mosaico fixado. Capa limpa com a palavra VER.", source: "Reinício do perfil", createdAt: now, updatedAt: now
+        },
+        {
+          id: "content_ta", title: "TA. · Método VERTA", format: "Carrossel", pillar: "Método VERTA", publishDate: "", publishTime: "", status: "Roteiro", pinned: true, pinnedWord: "TA.",
+          hook: "Não começamos escolhendo anúncio. Começamos entendendo onde a operação perde oportunidades.",
+          script: "SLIDE 1 · TA.\nO método que organiza marketing e comercial.\n\nSLIDE 2 · 1. DIAGNOSTICAR\nOferta, público, presença, atendimento e processo atual.\n\nSLIDE 3 · 2. ESTRUTURAR\nMensagem, canal, página, CRM, responsáveis e métricas.\n\nSLIDE 4 · 3. ATIVAR\nConteúdo, campanhas e abordagem comercial entram em execução.\n\nSLIDE 5 · 4. ACOMPANHAR\nLeads, qualidade, conversas, propostas e vendas são analisados.\n\nSLIDE 6 · 5. OTIMIZAR\nAjustamos o gargalo com base no que a operação mostra.\n\nSLIDE 7 · CTA\nO método muda conforme o problema, não conforme uma fórmula pronta.",
+          caption: "O Método VERTA conecta diagnóstico, estrutura, ativação, acompanhamento e otimização. Assim, cada ação tem um motivo e cada lead tem um próximo passo.",
+          cta: "Salve para consultar o Método VERTA", storyPrompt: "Mostre uma etapa do método em cada Story e abra uma caixa: em qual etapa sua empresa mais trava?", notes: "Segundo post do mosaico fixado. Capa limpa com a palavra TA.", source: "Reinício do perfil", createdAt: now, updatedAt: now
+        },
+        {
+          id: "content_ads", title: "ADS · Serviços e próximo passo", format: "Carrossel", pillar: "Oferta", publishDate: "", publishTime: "", status: "Roteiro", pinned: true, pinnedWord: "ADS",
+          hook: "O serviço certo depende do gargalo que impede sua empresa de gerar ou aproveitar oportunidades.",
+          script: "SLIDE 1 · ADS\nComo a VERTA pode trabalhar com sua empresa.\n\nSLIDE 2 · AQUISIÇÃO\nMeta Ads, Google Ads ou os dois canais integrados.\n\nSLIDE 3 · CONVERSÃO\nLanding pages e ofertas preparadas para transformar interesse em contato.\n\nSLIDE 4 · PRESENÇA\nGerenciamento de perfil, conteúdo e perfil mais tráfego.\n\nSLIDE 5 · COMERCIAL\nCRM, funil, follow-up e organização do atendimento.\n\nSLIDE 6 · DIREÇÃO\nConsultoria para diagnosticar, priorizar e acompanhar a execução.\n\nSLIDE 7 · CTA\nA conversa começa pelo problema, não por um pacote pronto.",
+          caption: "Tráfego pago, landing page, CRM, conteúdo e organização comercial só fazem sentido quando resolvem o gargalo certo. Na VERTA, o escopo nasce do diagnóstico da operação.",
+          cta: "Envie DIAGNÓSTICO no direct", storyPrompt: "Apresente os grupos de serviço e use uma enquete: aquisição, conversão ou comercial?", notes: "Terceiro post do mosaico fixado. Capa limpa com a palavra ADS.", source: "Reinício do perfil", createdAt: now, updatedAt: now
+        }
+      ];
+    }
+
+    const viewMeta = {
+      dashboard: ["Operação comercial", "Visão geral", "O que precisa de atenção para sua operação continuar andando."],
+      leads: ["Captação", "Caixa de entrada", "Contatos novos ficam aqui até você entender se existe uma oportunidade real."],
+      pipeline: ["Vendas", "Pipeline", "Acompanhe apenas oportunidades qualificadas e mova cada uma conforme a conversa avança."],
+      agenda: ["Execução", "Agenda", "Follow-ups e tarefas ordenados para você nunca perder o timing."],
+      contatos: ["Relacionamento", "Contatos", "Base comercial unificada de leads, oportunidades e clientes."],
+      clientes: ["Receita", "Clientes", "Oportunidades fechadas e valores que já entraram na sua operação."],
+      prospectar: ["Aquisição", "Pesquisa de clientes", "Pesquise empresas sem sair do CRM, avalie o fit e registre apenas as que fizerem sentido."],
+      cezar: ["Assistência comercial", "Cezar", "Sua secretaria comercial para preparar contatos, cobranças e avisos com aprovação obrigatória."],
+      automacoes: ["Processos", "Automações", "Rotinas simples para manter a operação em movimento sem depender da memória."],
+      conteudo: ["Marca e aquisição", "Operação de conteúdo", "Planeje a semana, prepare roteiros com o Cezar e acompanhe cada publicação da VERTA."],
+      materiais: ["Base interna", "Material de trabalho", "Método VERTA, serviços, funil, abordagens e referências para consultar durante a operação."],
+      config: ["Dados", "Configurações", "Faça backup da base e mantenha seus registros sob controle."]
+    };
+    const navGroups = [
+      ["Operação", ["dashboard", "leads", "pipeline", "agenda"]],
+      ["Base", ["contatos", "clientes"]],
+      ["Aquisição", ["prospectar"]],
+      ["Assistência", ["cezar", "automacoes"]],
+      ["VERTA", ["conteudo", "materiais"]],
+      ["Sistema", ["config"]]
+    ];
+    const navLabels = { dashboard: "Visão geral", leads: "Caixa de entrada", pipeline: "Pipeline", agenda: "Agenda", contatos: "Contatos", clientes: "Clientes", prospectar: "Pesquisa de clientes", cezar: "Cezar", automacoes: "Automações", conteudo: "Operação de conteúdo", materiais: "Material de trabalho", config: "Configurações" };
+
+    let state = loadState();
+    let currentView = "dashboard";
+    let leadSearch = "";
+    let leadFilter = "Todos";
+    let pipelineSearch = "";
+    let agendaFilter = "Abertas";
+    let contentFilter = "Todos";
+    let materialTab = "metodo";
+    let prospectingQuery = { segment: "", city: "" };
+    let cezarDraft = { recordId: "", intent: "Primeiro contato", instruction: "", text: "" };
+    let pendingMessageId = null;
+    let toastTimer;
+    let supabaseClient = null;
+    let authUser = null;
+    let authMode = "login";
+    let cloudReady = false;
+    let cloudSaveTimer = null;
+    let cloudPersisting = false;
+    let cloudSaveQueued = false;
+    let localRevision = 0;
+    let activeSessionUserId = "";
+    let sessionLoadingUserId = "";
+    let cloudStatus = { tone: "syncing", text: "Preparando nuvem" };
+
+    function baseState() {
+      return {
+        leads: [], deals: [], tasks: [], activities: [], messages: [], contentItems: defaultContentItems(),
+        settings: { autoNewLeadTask: true, autoProposalTask: true, healthAlerts: true, requireMessageApproval: true }
+      };
+    }
+
+    function normalizeState(raw) {
+      const fallback = baseState();
+      if (!raw || typeof raw !== "object") return fallback;
+      const legacyDeals = Array.isArray(raw.deals) ? raw.deals : [];
+      const hasLeads = Array.isArray(raw.leads);
+      const migratedLeads = hasLeads ? raw.leads : legacyDeals.filter(deal => deal.stage === "Lead novo").map(deal => ({
+        id: deal.id, company: deal.company || "", contact: deal.contact || "", whatsapp: deal.whatsapp || "", email: deal.email || "", instagram: "", website: "",
+        source: deal.source || "Outro", segment: "", city: "", interest: deal.service || "A definir", priority: deal.priority || "Média",
+        contactBasis: deal.contactBasis || "Não definida", notes: deal.notes || "", status: "Novo", createdAt: deal.createdAt || new Date().toISOString(), updatedAt: deal.updatedAt || new Date().toISOString()
+      }));
+      return {
+        leads: migratedLeads,
+        deals: hasLeads ? legacyDeals.map(normalizeDeal) : legacyDeals.filter(deal => deal.stage !== "Lead novo").map(normalizeDeal),
+        tasks: Array.isArray(raw.tasks) ? raw.tasks : [],
+        activities: Array.isArray(raw.activities) ? raw.activities : [],
+        messages: Array.isArray(raw.messages) ? raw.messages : [],
+        contentItems: Array.isArray(raw.contentItems) ? raw.contentItems : fallback.contentItems,
+        settings: { ...fallback.settings, ...(raw.settings || {}) }
+      };
+    }
+
+    function loadState() {
+      try { return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null")); }
+      catch (error) { return baseState(); }
+    }
+
+    function normalizeDeal(deal) {
+      const stageMap = { "Conversei": "Diagnóstico", "Diagnostico marcado": "Diagnóstico", "Follow-up": "Negociação" };
+      return { ...deal, stage: stageMap[deal.stage] || deal.stage || "Diagnóstico", priority: deal.priority === "Media" ? "Média" : (deal.priority || "Média") };
+    }
+
+    function loadSyncMeta() {
+      try { return JSON.parse(localStorage.getItem(SYNC_META_KEY) || "null") || { dirty: false, savedAt: "" }; }
+      catch (error) { return { dirty: false, savedAt: "" }; }
+    }
+
+    function writeSyncMeta(meta) { localStorage.setItem(SYNC_META_KEY, JSON.stringify({ ...loadSyncMeta(), ...meta })); }
+
+    function saveLocalSnapshot(markDirty = false) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (markDirty) writeSyncMeta({ dirty: true, changedAt: new Date().toISOString() });
+    }
+
+    function saveState() {
+      localRevision += 1;
+      saveLocalSnapshot(true);
+      if (cloudReady && authUser) scheduleCloudSave();
+    }
+
+    function setAuthStatus(message = "", tone = "") {
+      const element = document.querySelector("#authStatus");
+      element.textContent = message;
+      element.className = `auth-status${tone ? ` ${tone}` : ""}`;
+    }
+
+    function setCloudStatus(tone, message) {
+      cloudStatus = { tone, text: message };
+      const button = document.querySelector("#cloudStatusButton");
+      if (button) { button.dataset.tone = tone; button.textContent = message; }
+      const configStatus = document.querySelector("#configCloudStatus");
+      if (configStatus) configStatus.textContent = message;
+    }
+
+    function updateMigrationNotice() {
+      const count = state.leads.length + state.deals.length;
+      const element = document.querySelector("#authMigration");
+      if (count === 1) element.textContent = "1 registro comercial deste navegador será preservado e enviado para sua conta.";
+      else if (count > 1) element.textContent = `${count} registros comerciais deste navegador serão preservados e enviados para sua conta.`;
+      else element.textContent = "Os dados criados neste navegador serão protegidos e sincronizados com sua conta.";
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const register = mode === "register";
+      document.querySelector("#authTitle").textContent = register ? "Criar primeiro acesso" : "Entrar no CRM";
+      document.querySelector("#authSubtitle").textContent = register ? "Crie a conta que será a proprietária dos dados da VERTA." : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.";
+      document.querySelector("#authSubmit").textContent = register ? "Criar conta" : "Entrar";
+      document.querySelector("#authToggle").textContent = register ? "Já tem uma conta? Entrar" : "Primeiro acesso? Criar conta";
+      document.querySelector("#authPassword").autocomplete = register ? "new-password" : "current-password";
+      setAuthStatus();
+    }
+
+    function showAuthShell() {
+      document.querySelector("#authShell").hidden = false;
+      document.querySelector("#crmApp").hidden = true;
+      document.querySelector("#mobileBar").hidden = true;
+      updateMigrationNotice();
+    }
+
+    function showCrmApp() {
+      document.querySelector("#authShell").hidden = true;
+      document.querySelector("#crmApp").hidden = false;
+      document.querySelector("#mobileBar").hidden = false;
+      render();
+      setCloudStatus(cloudStatus.tone, cloudStatus.text);
+    }
+
+    function cloneState(value = state) { return JSON.parse(JSON.stringify(value)); }
+
+    async function upsertCloudSnapshot(snapshot) {
+      const { error } = await supabaseClient.from("crm_states").upsert({
+        user_id: authUser.id,
+        data: snapshot,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id" });
+      if (error) throw error;
+    }
+
+    async function hydrateCloudState() {
+      if (!supabaseClient || !authUser) return;
+      setCloudStatus("syncing", "Carregando dados");
+      const { data: row, error } = await supabaseClient
+        .from("crm_states")
+        .select("data, updated_at")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (error) throw error;
+
+      const syncMeta = loadSyncMeta();
+      const localSnapshot = cloneState();
+      if (!row) {
+        await upsertCloudSnapshot(localSnapshot);
+      } else if (syncMeta.dirty) {
+        await upsertCloudSnapshot(localSnapshot);
+      } else {
+        state = normalizeState(row.data);
+        saveLocalSnapshot(false);
+      }
+
+      cloudReady = true;
+      writeSyncMeta({ dirty: false, savedAt: new Date().toISOString() });
+      setCloudStatus("success", "Salvo na nuvem");
+    }
+
+    function scheduleCloudSave() {
+      clearTimeout(cloudSaveTimer);
+      setCloudStatus("syncing", "Salvando alterações");
+      cloudSaveTimer = setTimeout(() => persistCloudState(), 650);
+    }
+
+    async function persistCloudState(showConfirmation = false) {
+      if (!cloudReady || !authUser || !supabaseClient) return;
+      if (cloudPersisting) { cloudSaveQueued = true; return; }
+      cloudPersisting = true;
+      const revision = localRevision;
+      const snapshot = cloneState();
+      setCloudStatus("syncing", "Salvando alterações");
+      try {
+        await upsertCloudSnapshot(snapshot);
+        if (revision === localRevision) writeSyncMeta({ dirty: false, savedAt: new Date().toISOString() });
+        else cloudSaveQueued = true;
+        setCloudStatus("success", "Salvo na nuvem");
+        if (showConfirmation) showToast("Dados sincronizados com a nuvem");
+      } catch (error) {
+        writeSyncMeta({ dirty: true });
+        setCloudStatus("error", "Nuvem pendente");
+        if (showConfirmation) showToast("Não foi possível sincronizar agora");
+        console.error("VERTA CRM cloud save:", error);
+      } finally {
+        cloudPersisting = false;
+        if (cloudSaveQueued) { cloudSaveQueued = false; scheduleCloudSave(); }
+      }
+    }
+
+    async function syncNow() {
+      if (!authUser) return showAuthShell();
+      if (!cloudReady) {
+        try { await hydrateCloudState(); showCrmApp(); showToast("Dados conectados à nuvem"); }
+        catch (error) { setCloudStatus("error", "Configurar banco"); showToast("Execute o arquivo schema.sql no Supabase"); console.error("VERTA CRM cloud sync:", error); }
+        return;
+      }
+      await persistCloudState(true);
+    }
+
+    async function applySession(session) {
+      const userId = session?.user?.id || "";
+      if (!userId) {
+        authUser = null;
+        activeSessionUserId = "";
+        cloudReady = false;
+        setAuthMode("login");
+        showAuthShell();
+        return;
+      }
+      if (sessionLoadingUserId === userId) return;
+      if (activeSessionUserId === userId && !document.querySelector("#crmApp").hidden) return;
+      sessionLoadingUserId = userId;
+      activeSessionUserId = userId;
+      authUser = session.user;
+      setAuthStatus("Carregando seus dados...", "success");
+      try {
+        await hydrateCloudState();
+        showCrmApp();
+      } catch (error) {
+        cloudReady = false;
+        setCloudStatus("error", "Configurar banco");
+        showCrmApp();
+        showToast("CRM aberto em modo local. Falta executar o schema.sql no Supabase.");
+        console.error("VERTA CRM cloud load:", error);
+      } finally {
+        sessionLoadingUserId = "";
+      }
+    }
+
+    async function handleAuthSubmit(event) {
+      event.preventDefault();
+      if (!supabaseClient) return setAuthStatus("A conexão segura ainda não carregou. Atualize a página.", "error");
+      const form = event.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const submit = document.querySelector("#authSubmit");
+      submit.disabled = true;
+      setAuthStatus(authMode === "register" ? "Criando sua conta..." : "Validando acesso...");
+      try {
+        if (authMode === "register") {
+          const { data: result, error } = await supabaseClient.auth.signUp({ email: data.email.trim(), password: data.password });
+          if (error) throw error;
+          if (!result.session) setAuthStatus("Conta criada. Confirme o e-mail recebido e depois entre no CRM.", "success");
+          else setAuthStatus("Conta criada. Preparando seus dados...", "success");
+        } else {
+          const { error } = await supabaseClient.auth.signInWithPassword({ email: data.email.trim(), password: data.password });
+          if (error) throw error;
+          setAuthStatus("Acesso confirmado. Carregando seus dados...", "success");
+        }
+      } catch (error) {
+        const message = error?.message?.includes("Invalid login credentials") ? "E-mail ou senha incorretos." : (error?.message || "Não foi possível concluir o acesso.");
+        setAuthStatus(message, "error");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function logout() {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+      showAuthShell();
+      setAuthStatus("Você saiu do CRM com segurança.", "success");
+    }
+
+    async function initCloud() {
+      updateMigrationNotice();
+      if (!window.supabase?.createClient) {
+        setAuthStatus("Não foi possível carregar a conexão segura. Verifique a internet e atualize a página.", "error");
+        return;
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      supabaseClient.auth.onAuthStateChange((_event, session) => setTimeout(() => applySession(session), 0));
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) return setAuthStatus(error.message, "error");
+      await applySession(data.session);
+    }
+    function uid(prefix = "id") { return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`; }
+    function localDate(date = new Date()) { const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return shifted.toISOString().slice(0, 10); }
+    function todayISO() { return localDate(); }
+    function addDays(dateString, amount) { const date = new Date(`${dateString}T12:00:00`); date.setDate(date.getDate() + amount); return localDate(date); }
+    function addBusinessDays(amount) { let next = new Date(`${todayISO()}T12:00:00`); let remaining = amount; while (remaining > 0) { next.setDate(next.getDate() + 1); if (next.getDay() !== 0 && next.getDay() !== 6) remaining--; } return localDate(next); }
+    function money(value) { return Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }); }
+    function formatDate(date) { if (!date) return "Sem data"; return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(new Date(`${date}T12:00:00`)); }
+    function formatDateTime(date) { return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(date)); }
+    function dayDiff(date) { if (!date) return null; const one = new Date(`${todayISO()}T12:00:00`); const two = new Date(`${date}T12:00:00`); return Math.round((two - one) / 86400000); }
+    function mondayOf(dateString = todayISO()) { const date = new Date(`${dateString}T12:00:00`); const day = date.getDay(); date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day)); return localDate(date); }
+    function nextMonday() { const date = new Date(`${todayISO()}T12:00:00`); const day = date.getDay(); date.setDate(date.getDate() + (day === 0 ? 1 : 8 - day)); return localDate(date); }
+    function contentThemeForWeek(monday) { const index = Math.abs(Math.floor(new Date(`${monday}T12:00:00`).getTime() / 604800000)) % contentThemes.length; return contentThemes[index]; }
+    function contentRoutineTitle(item, theme) {
+      const titles = {
+        Diagnóstico: `O erro que faz ${theme} perder resultado`,
+        Educação: `${theme}: o que precisa estar pronto antes de investir`,
+        Bastidores: `Bastidores: como a VERTA planeja ${theme}`,
+        "Método VERTA": `Método VERTA aplicado a ${theme}`,
+        Opinião: `Minha visão: ${theme} não funciona sozinho`
+      };
+      return titles[item.pillar] || `${item.focus}: ${theme}`;
+    }
+    function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" }[char])); }
+    function initials(value) { return String(value || "?").trim().split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase(); }
+    function activeDeals() { return state.deals.filter(deal => !["Fechado", "Perdido"].includes(deal.stage)); }
+    function generatedTasks() { return activeDeals().filter(deal => deal.nextAction && deal.nextDate).map(deal => ({ id: `next_${deal.id}`, title: deal.nextAction, dueDate: deal.nextDate, relatedId: deal.id, notes: "Próxima ação da oportunidade", done: false, generated: true })); }
+    function allTasks() { return [...generatedTasks(), ...state.tasks].sort((a, b) => Number(a.done) - Number(b.done) || String(a.dueDate || "9999").localeCompare(String(b.dueDate || "9999"))); }
+    function relatedRecord(id) { return state.deals.find(item => item.id === id) || state.leads.find(item => item.id === id); }
+    function relatedName(id) { const record = relatedRecord(id); return record ? record.company : "Sem vínculo"; }
+    function dueTag(date, done = false) {
+      if (done) return '<span class="tag green">Concluída</span>';
+      const diff = dayDiff(date);
+      if (diff === null) return '<span class="tag">Sem data</span>';
+      if (diff < 0) return `<span class="tag red">${Math.abs(diff)} dia(s) atrasado</span>`;
+      if (diff === 0) return '<span class="tag amber">Hoje</span>';
+      if (diff === 1) return '<span class="tag blue">Amanhã</span>';
+      return `<span class="tag">${formatDate(date)}</span>`;
+    }
+    function leadStatusTag(status) {
+      const styles = { Novo: "amber", "Em contato": "blue", Qualificado: "green", Arquivado: "" };
+      return `<span class="tag ${styles[status] || ""}">${escapeHtml(status)}</span>`;
+    }
+    function recordType(record) {
+      if (state.deals.some(item => item.id === record?.id)) return record.stage === "Fechado" ? "Cliente" : "Oportunidade";
+      return "Lead";
+    }
+    function communicationRecords() {
+      const qualifiedLeadIds = new Set(state.deals.map(deal => deal.leadId).filter(Boolean));
+      return [...state.leads.filter(lead => !qualifiedLeadIds.has(lead.id)), ...state.deals]
+        .filter(record => record.company)
+        .sort((a, b) => a.company.localeCompare(b.company, "pt-BR"));
+    }
+    function shortContext(value, fallback = "") {
+      const cleaned = String(value || "").replace(/\s+/g, " ").trim();
+      if (!cleaned) return fallback;
+      return cleaned.length > 150 ? `${cleaned.slice(0, 147)}...` : cleaned;
+    }
+    function firstName(record) {
+      return String(record?.contact || "").trim().split(/\s+/)[0] || "";
+    }
+    function cezarRecommendation(record) {
+      if (!record) return { intent: "Primeiro contato", title: "Selecione um contato", reason: "O Cezar usa a etapa, o serviço e as notas do cadastro para sugerir o próximo movimento." };
+      if (record.stage === "Proposta enviada") return { intent: "Follow-up", title: "Retomar a proposta", reason: "A oportunidade está com proposta enviada. O ideal é confirmar a leitura e combinar uma decisão objetiva." };
+      if (record.stage === "Negociação") return { intent: "Follow-up", title: "Resolver o ponto pendente", reason: "A conversa está em negociação. Retome a dúvida central sem repetir toda a proposta." };
+      if (record.stage === "Fechado") return { intent: "Relacionamento", title: "Cuidar do cliente ativo", reason: "Use o contato para alinhamento, atualização, cobrança combinada ou percepção de valor." };
+      if (record.status === "Em contato") return { intent: "Follow-up", title: "Continuar a conversa", reason: "O lead já recebeu contato. A próxima mensagem deve acrescentar contexto e pedir um próximo passo simples." };
+      if (record.status === "Arquivado" || record.stage === "Perdido") return { intent: "Reativação", title: "Reavaliar o momento", reason: "Faça uma retomada leve, reconhecendo que o momento anterior pode ter mudado." };
+      return { intent: "Primeiro contato", title: "Abrir conversa com contexto", reason: "O contato ainda não avançou. Comece com uma observação real e uma pergunta curta, sem despejar uma proposta." };
+    }
+    function generateCezarMessage(record, intent, instruction = "") {
+      if (!record) return "Selecione um contato cadastrado para o Cezar preparar a mensagem.";
+      const name = firstName(record);
+      const greeting = name ? `Olá, ${name}, tudo bem?` : "Olá, tudo bem?";
+      const company = record.company || "sua empresa";
+      const service = record.interest || record.service || "marketing e organização comercial";
+      const context = shortContext(instruction || record.notes);
+      const contextSentence = context ? `\n\nContexto: ${context}` : "";
+      const templates = {
+        "Primeiro contato": `${greeting}\n\nSou o Heitor, da VERTA. Analisei a ${company} e vi uma possível oportunidade ligada a ${service}. Antes de te mandar algo genérico, queria entender: hoje vocês já trabalham essa frente internamente ou com algum parceiro?\n\nSe não for uma prioridade agora, sem problema.`,
+        "Follow-up": `${greeting}\n\nPassando para retomar nossa conversa sobre ${service}. Queria confirmar se você conseguiu avaliar o que falamos e se existe algum ponto que eu possa esclarecer para definirmos o próximo passo.${contextSentence}`,
+        "Cobrança": `${greeting}\n\nPassando pela VERTA para lembrar do pagamento referente ao serviço deste período.${context ? ` ${context}` : " Se precisar, eu te envio novamente os dados e a referência da cobrança."}\n\nSe o pagamento já foi realizado, pode desconsiderar e me avisar para eu atualizar o controle.`,
+        "Aviso": `${greeting}\n\nPassando para te atualizar sobre ${service}.${context ? ` ${context}` : " Assim que você visualizar, me confirma o recebimento, por favor."}\n\nSe surgir alguma dúvida, estou por aqui.`,
+        "Reativação": `${greeting}\n\nNós conversamos há um tempo sobre ${service}, mas entendi que talvez não fosse o melhor momento. Queria saber se essa prioridade mudou ou se ainda faz mais sentido deixar para depois.`,
+        "Relacionamento": `${greeting}\n\nQueria fazer um alinhamento rápido sobre o trabalho da VERTA com a ${company}.${context ? ` ${context}` : " Como você está percebendo o andamento e existe algum ponto que precisa de mais atenção agora?"}`
+      };
+      return templates[intent] || templates["Primeiro contato"];
+    }
+    function messageStatusTag(status) {
+      const styles = { Rascunho: "amber", "Aberta no WhatsApp": "blue", Enviada: "green", Rejeitada: "red" };
+      return `<span class="tag ${styles[status] || ""}">${escapeHtml(status)}</span>`;
+    }
+    function contentStatusTag(status) {
+      const styles = { Ideia: "", Roteiro: "amber", Produção: "blue", Pronto: "green", Agendado: "blue", Publicado: "green" };
+      return `<span class="tag ${styles[status] || ""}">${escapeHtml(status || "Ideia")}</span>`;
+    }
+    function nextContentStatus(status) { const index = contentStatuses.indexOf(status); return contentStatuses[Math.min(index < 0 ? 1 : index + 1, contentStatuses.length - 1)]; }
+    function generateContentAssets(item) {
+      if (item.pinnedWord) {
+        const preset = defaultContentItems().find(content => content.pinnedWord === item.pinnedWord);
+        if (preset) return { hook: preset.hook, script: preset.script, caption: preset.caption, cta: preset.cta, storyPrompt: preset.storyPrompt };
+      }
+      const title = String(item.title || "uma decisão de marketing").trim();
+      const pillar = item.pillar || "Educação";
+      const format = item.format || "Reel";
+      const hooks = {
+        Diagnóstico: `Se sua empresa atrai pessoas, mas poucas avançam, o problema pode estar aqui: ${title.toLowerCase()}.`,
+        Educação: `Antes de investir mais, entenda como funciona: ${title}.`,
+        Bastidores: `Vou te mostrar como a VERTA pensa ${title.toLowerCase()} na prática.`,
+        "Método VERTA": `${title}: o processo precisa conectar marketing, atendimento e venda.`,
+        Prova: `O resultado não começa no número final. Começa nas decisões que mudaram o processo.`,
+        Oferta: `Você não precisa contratar tudo. Precisa resolver o gargalo certo.`,
+        Opinião: `${title}. Essa é minha visão depois de acompanhar operações reais.`,
+        Posicionamento: `A VERTA ajuda negócios a gerar oportunidades e organizar o caminho do lead até a venda.`
+      };
+      const hook = hooks[pillar] || hooks.Educação;
+      const cta = pillar === "Oferta" ? "Envie DIAGNÓSTICO no direct" : pillar === "Opinião" ? "Comente como isso acontece na sua empresa" : "Salve este conteúdo e fale com a VERTA para avaliar sua operação";
+      const script = format === "Carrossel"
+        ? `SLIDE 1 · CAPA\n${hook}\n\nSLIDE 2 · CENÁRIO\nMostre a situação que um negócio local reconhece no dia a dia.\n\nSLIDE 3 · GARGALO\nExplique por que o problema acontece sem culpar apenas o canal ou o anúncio.\n\nSLIDE 4 · DECISÃO 1\nApresente o primeiro ajuste prático que organiza a operação.\n\nSLIDE 5 · DECISÃO 2\nConecte aquisição, oferta, atendimento e acompanhamento.\n\nSLIDE 6 · EXEMPLO\nUse um exemplo simples de prestador de serviço ou negócio local.\n\nSLIDE 7 · CTA\n${cta}.`
+        : `ABERTURA · 0-3s\n${hook}\n\nCONTEXTO · 3-10s\nDescreva uma situação real que negócios locais e prestadores de serviço reconhecem.\n\nPONTO 1 · 10-20s\nMostre o erro ou a decisão que mais muda o resultado.\n\nPONTO 2 · 20-32s\nExplique como marketing e comercial precisam trabalhar juntos.\n\nEXEMPLO · 32-42s\nDê um exemplo curto, concreto e fácil de visualizar.\n\nFECHAMENTO · 42-50s\n${cta}.`;
+      const caption = `${hook}\n\nNa prática, ${title.toLowerCase()} precisa estar ligado à oferta, ao atendimento e ao próximo passo comercial. Quando cada parte trabalha separada, mais esforço não significa mais vendas.\n\nNa VERTA, analisamos o gargalo antes de definir a solução.\n\n${cta}.`;
+      const storyPrompt = `3 a 5 Stories: apresente o problema olhando para a câmera, mostre um bastidor relacionado e feche com enquete ou caixa de perguntas sobre ${title.toLowerCase()}.`;
+      return { hook, script, caption, cta, storyPrompt };
+    }
+    function addActivity(kind, relatedId, message) {
+      state.activities.unshift({ id: uid("activity"), kind, relatedId, message, createdAt: new Date().toISOString() });
+      state.activities = state.activities.slice(0, 250);
+    }
+    function showToast(message) { const toast = document.querySelector("#toast"); toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 3200); }
+
+    function renderNav() {
+      document.querySelector("#nav").innerHTML = navGroups.map(([group, names]) => `
+        <div class="nav-section">${group}</div>
+        ${names.map(name => `<button type="button" data-action="view" data-view="${name}" class="${currentView === name ? "active" : ""}"><span class="nav-mark"></span>${navLabels[name]}</button>`).join("")}
+      `).join("");
+    }
+
+    function renderMetric(label, value, note, tone = "") { return `<section class="card metric ${tone}"><span class="metric-label">${label}</span><strong>${value}</strong><small>${note}</small></section>`; }
+
+    function renderDashboard() {
+      const active = activeDeals();
+      const totalOpen = active.reduce((sum, deal) => sum + Number(deal.value || 0), 0);
+      const closed = state.deals.filter(deal => deal.stage === "Fechado");
+      const resolved = state.deals.filter(deal => ["Fechado", "Perdido"].includes(deal.stage));
+      const conversion = resolved.length ? Math.round((closed.length / resolved.length) * 100) : 0;
+      const overdue = allTasks().filter(task => !task.done && dayDiff(task.dueDate) < 0);
+      const today = allTasks().filter(task => !task.done && dayDiff(task.dueDate) === 0);
+      const neglected = active.filter(deal => !deal.nextAction || !deal.nextDate);
+      const messageDrafts = state.messages.filter(message => message.status === "Rascunho");
+      const leadPreview = state.leads.filter(lead => ["Novo", "Em contato"].includes(lead.status)).slice(0, 5);
+      const timeline = state.activities.slice(0, 6);
+      const stageValues = stages.filter(stage => !["Fechado", "Perdido"].includes(stage)).map(stage => ({ stage, count: active.filter(deal => deal.stage === stage).length }));
+      const max = Math.max(1, ...stageValues.map(item => item.count));
+      return `
+        <section class="card quick-capture">
+          <div class="section-head"><div><p class="section-kicker">Entrada rápida</p><h2>Registrar novo contato</h2><p>Salve o lead e deixe o primeiro follow-up já organizado.</p></div><button class="btn ghost small" type="button" data-action="new-lead">Abrir formulário completo</button></div>
+          <form class="quick-grid" id="quickLeadForm">
+            <div class="field"><label>Empresa</label><input name="company" required placeholder="Nome da empresa"></div>
+            <div class="field"><label>Contato</label><input name="contact" placeholder="Nome da pessoa"></div>
+            <div class="field"><label>WhatsApp</label><input name="whatsapp" inputmode="tel" placeholder="(00) 00000-0000"></div>
+            <div class="field"><label>Origem</label><select name="source"><option>Prospecção manual</option><option>Instagram</option><option>Indicação</option><option>Google Maps</option><option>Site</option></select></div>
+            <button class="btn primary" type="submit">Salvar contato</button>
+          </form>
+        </section>
+        <div class="grid metrics" style="margin-top:14px">
+          ${renderMetric("Pipeline em aberto", money(totalOpen), `${active.length} oportunidade(s) em andamento`)}
+          ${renderMetric("Novos contatos", state.leads.filter(lead => lead.status === "Novo").length, "Aguardando primeiro contato", "warn")}
+          ${renderMetric("Follow-ups", overdue.length ? overdue.length : today.length, overdue.length ? `${overdue.length} tarefa(s) atrasada(s)` : `${today.length} tarefa(s) para hoje`, overdue.length ? "red" : "warn")}
+          ${renderMetric("Conversão", `${conversion}%`, `${closed.length} venda(s) fechada(s)`) }
+        </div>
+        <div class="grid two-col">
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Prioridade</p><h2>Hoje na operação</h2></div><button class="btn small" type="button" data-action="view" data-view="agenda">Abrir agenda</button></div>
+            ${[...overdue, ...today].slice(0, 5).length ? `<div class="list">${[...overdue, ...today].slice(0, 5).map(task => taskListItem(task)).join("")}</div>` : `<div class="empty"><strong>Agenda sob controle</strong>Nenhuma tarefa atrasada ou prevista para hoje.</div>`}
+            ${neglected.length ? `<div class="notice" style="margin-top:14px"><b>${neglected.length} oportunidade(s) sem próximo passo.</b> Abra o pipeline e defina a ação que mantém a conversa viva.</div>` : ""}
+            ${messageDrafts.length ? `<div class="notice" style="margin-top:14px"><b>${messageDrafts.length} mensagem(ns) aguardando sua revisão.</b><br><button class="btn small" type="button" data-action="view" data-view="cezar" style="margin-top:9px">Abrir Cezar</button></div>` : ""}
+          </section>
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Captação</p><h2>Contatos para qualificar</h2></div><button class="btn small" type="button" data-action="view" data-view="leads">Ver caixa</button></div>
+            ${leadPreview.length ? `<div class="list">${leadPreview.map(lead => `
+              <div class="list-item"><div class="identity"><span class="avatar lead">${initials(lead.company)}</span><div><p class="item-title">${escapeHtml(lead.company)}</p><p class="item-meta">${escapeHtml(lead.contact || lead.source || "Novo contato")} · ${escapeHtml(lead.interest || "A definir")}</p></div></div><div class="item-actions">${leadStatusTag(lead.status)}<button class="btn small" type="button" data-action="edit-lead" data-id="${lead.id}">Abrir</button></div></div>`).join("")}</div>` : `<div class="empty"><strong>Sua caixa de entrada está vazia</strong>Registre contatos vindos de indicação, Instagram, site ou prospecção.</div>`}
+          </section>
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Pipeline</p><h2>Distribuição por etapa</h2></div><button class="btn small" type="button" data-action="view" data-view="pipeline">Abrir pipeline</button></div>
+            <div class="bar-list">${stageValues.map(item => `<div class="bar-row"><span>${item.stage}</span><div class="bar"><i style="width:${Math.max(0, Math.round((item.count / max) * 100))}%"></i></div><b>${item.count} opp.</b></div>`).join("")}</div>
+          </section>
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Histórico</p><h2>Movimentações recentes</h2></div></div>
+            ${timeline.length ? timeline.map(activity => `<div class="activity"><p>${escapeHtml(activity.message)}</p><small>${formatDateTime(activity.createdAt)} · ${escapeHtml(relatedName(activity.relatedId))}</small></div>`).join("") : `<div class="empty"><strong>A operação começa aqui</strong>As movimentações de contatos, tarefas e oportunidades aparecerão neste histórico.</div>`}
+          </section>
+        </div>
+      `;
+    }
+
+    function taskListItem(task) { return `<div class="list-item"><div><p class="item-title">${escapeHtml(task.title)}</p><p class="item-meta">${escapeHtml(relatedName(task.relatedId))} · ${task.notes ? escapeHtml(task.notes) : "Sem observação"}</p></div><div class="item-actions">${dueTag(task.dueDate, task.done)}<button class="btn small" type="button" data-action="open-related" data-id="${task.relatedId}">Abrir</button></div></div>`; }
+
+    function renderLeads() {
+      const leads = state.leads.filter(lead => {
+        const query = leadSearch.trim().toLowerCase();
+        const text = `${lead.company} ${lead.contact} ${lead.source} ${lead.segment} ${lead.city} ${lead.interest}`.toLowerCase();
+        return (!query || text.includes(query)) && (leadFilter === "Todos" || lead.status === leadFilter);
+      }).sort((a, b) => String(b.updatedAt || b.createdAt).localeCompare(String(a.updatedAt || a.createdAt)));
+      return `
+        <div class="filters">
+          <div class="field"><label>Buscar contato</label><input id="leadSearch" value="${escapeHtml(leadSearch)}" placeholder="Empresa, pessoa, cidade ou segmento"></div>
+          <div class="field compact"><label>Status</label><select id="leadFilter"><option>Todos</option><option>Novo</option><option>Em contato</option><option>Qualificado</option><option>Arquivado</option></select></div>
+          <button class="btn primary" type="button" data-action="new-lead">+ Novo contato</button>
+        </div>
+        <section class="lead-board">
+          ${leads.length ? leads.map(leadCard).join("") : `<div class="empty"><strong>Nenhum contato encontrado</strong>Registre um lead manualmente ou use a área de prospecção para pesquisar empresas.</div>`}
+        </section>
+      `;
+    }
+
+    function leadCard(lead) {
+      const contact = [lead.contact, lead.whatsapp].filter(Boolean).join(" · ") || "Sem telefone cadastrado";
+      return `<article class="lead-card"><div class="identity"><span class="avatar lead">${initials(lead.company)}</span><div><h3>${escapeHtml(lead.company)}</h3><p>${escapeHtml(contact)}</p><div class="tag-row" style="margin-top:8px">${leadStatusTag(lead.status)}<span class="tag">${escapeHtml(lead.source || "Sem origem")}</span></div></div></div><div class="lead-extra"><span class="info-label">Perfil</span><span class="info-value">${escapeHtml([lead.segment, lead.city].filter(Boolean).join(" · ") || "Sem segmento ou região")}</span></div><div class="lead-extra"><span class="info-label">Interesse</span><span class="info-value">${escapeHtml(lead.interest || "A definir")}</span></div><div class="item-actions"><button class="btn small" type="button" data-action="edit-lead" data-id="${lead.id}">Editar</button>${lead.whatsapp ? `<button class="btn small" type="button" data-action="cezar-record" data-id="${lead.id}">Cezar</button>` : ""}${["Novo", "Em contato"].includes(lead.status) ? `<button class="btn small primary" type="button" data-action="qualify-lead" data-id="${lead.id}">Qualificar</button>` : ""}</div></article>`;
+    }
+
+    function renderPipeline() {
+      const query = pipelineSearch.trim().toLowerCase();
+      const filtered = state.deals.filter(deal => `${deal.company} ${deal.contact} ${deal.service} ${deal.title}`.toLowerCase().includes(query));
+      return `
+        <div class="filters"><div class="field"><label>Buscar oportunidade</label><input id="pipelineSearch" value="${escapeHtml(pipelineSearch)}" placeholder="Empresa, contato, serviço ou oportunidade"></div><button class="btn primary" type="button" data-action="new-deal">+ Nova oportunidade</button></div>
+        <div class="kanban">${stages.map(stage => stageColumn(stage, filtered.filter(deal => deal.stage === stage))).join("")}</div>
+      `;
+    }
+
+    function stageColumn(stage, deals) {
+      const amount = deals.reduce((sum, deal) => sum + Number(deal.value || 0), 0);
+      return `<section class="stage"><div class="stage-head"><div><strong>${stage}</strong><small>${deals.length} oportunidade(s) · ${money(amount)}</small></div><button class="btn small square" type="button" data-action="new-deal-stage" data-stage="${stage}" aria-label="Adicionar oportunidade" title="Adicionar oportunidade">+</button></div><div class="stage-body" data-drop-stage="${stage}">${deals.length ? deals.map(dealCard).join("") : '<div class="drop-hint">Arraste ou adicione uma oportunidade aqui</div>'}</div></section>`;
+    }
+
+    function dealCard(deal) {
+      return `<article class="deal-card" draggable="true" data-deal-id="${deal.id}" data-priority="${escapeHtml(deal.priority)}"><h4>${escapeHtml(deal.company)}</h4><p>${escapeHtml(deal.title)}</p><div class="tag-row"><span class="tag">${escapeHtml(deal.service || "A definir")}</span><span class="tag green">${money(deal.value)}</span>${dueTag(deal.nextDate)}</div><p><b>Próxima:</b> ${escapeHtml(deal.nextAction || "Definir follow-up")}</p><div class="card-actions"><button class="btn small" type="button" data-action="edit-deal" data-id="${deal.id}">Abrir</button>${deal.whatsapp ? `<button class="btn small" type="button" data-action="cezar-record" data-id="${deal.id}">Cezar</button>` : ""}</div></article>`;
+    }
+
+    function renderAgenda() {
+      const tasks = allTasks().filter(task => agendaFilter === "Todas" || agendaFilter === "Concluídas" ? (agendaFilter === "Todas" || task.done) : !task.done);
+      const visible = agendaFilter === "Hoje" ? tasks.filter(task => dayDiff(task.dueDate) <= 0) : tasks;
+      return `
+        <section class="card card-pad">
+          <div class="section-head"><div><p class="section-kicker">Execução</p><h2>Follow-ups e tarefas</h2><p>As próximas ações das oportunidades aparecem aqui automaticamente.</p></div><button class="btn primary" type="button" data-action="new-task">+ Nova tarefa</button></div>
+          <div class="agenda-tabs"><button class="tab ${agendaFilter === "Abertas" ? "active" : ""}" type="button" data-action="agenda-filter" data-filter="Abertas">Abertas</button><button class="tab ${agendaFilter === "Hoje" ? "active" : ""}" type="button" data-action="agenda-filter" data-filter="Hoje">Atrasadas e hoje</button><button class="tab ${agendaFilter === "Concluídas" ? "active" : ""}" type="button" data-action="agenda-filter" data-filter="Concluídas">Concluídas</button><button class="tab ${agendaFilter === "Todas" ? "active" : ""}" type="button" data-action="agenda-filter" data-filter="Todas">Todas</button></div>
+          ${visible.length ? `<div>${visible.map(taskRow).join("")}</div>` : `<div class="empty"><strong>Nenhuma tarefa nesta visão</strong>Quando você definir a próxima ação de uma oportunidade, ela aparecerá automaticamente aqui.</div>`}
+        </section>
+      `;
+    }
+
+    function taskRow(task) {
+      const label = relatedName(task.relatedId);
+      return `<article class="task-row ${task.done ? "done" : ""}"><div class="date-pill"><b>${formatDate(task.dueDate)}</b><span>${dayDiff(task.dueDate) < 0 && !task.done ? "atrasada" : task.done ? "concluída" : dayDiff(task.dueDate) === 0 ? "hoje" : "pendente"}</span></div><div><p class="item-title">${escapeHtml(task.title)}</p><p class="item-meta">${escapeHtml(label)}${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</p></div><div class="item-actions">${dueTag(task.dueDate, task.done)}${task.generated ? `<button class="btn small" type="button" data-action="open-related" data-id="${task.relatedId}">Abrir</button>` : `<button class="btn small" type="button" data-action="toggle-task" data-id="${task.id}">${task.done ? "Reabrir" : "Concluir"}</button><button class="btn small" type="button" data-action="edit-task" data-id="${task.id}">Editar</button>`}</div></article>`;
+    }
+
+    function renderContacts() {
+      const contacts = [
+        ...state.leads.map(lead => ({ ...lead, type: "Lead", relation: lead.status, action: "edit-lead" })),
+        ...state.deals.map(deal => ({ ...deal, type: deal.stage === "Fechado" ? "Cliente" : "Oportunidade", relation: deal.stage, action: "edit-deal" }))
+      ].sort((a, b) => String(b.updatedAt || b.createdAt).localeCompare(String(a.updatedAt || a.createdAt)));
+      return `<section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Base comercial</p><h2>Todos os contatos</h2><p>Leads, oportunidades e clientes em uma única lista.</p></div><button class="btn primary" type="button" data-action="new-lead">+ Novo contato</button></div>${contacts.length ? `<div class="table-wrap"><table><thead><tr><th>Empresa / pessoa</th><th>Contato</th><th>Origem</th><th>Interesse</th><th>Tipo</th><th>Status</th><th></th></tr></thead><tbody>${contacts.map(contact => `<tr><td><strong>${escapeHtml(contact.company)}</strong><br><small>${escapeHtml(contact.contact || "Sem nome")}</small></td><td>${escapeHtml(contact.whatsapp || contact.email || "Sem canal")}</td><td>${escapeHtml(contact.source || "-")}</td><td>${escapeHtml(contact.interest || contact.service || "-")}</td><td><span class="tag">${contact.type}</span></td><td>${contact.type === "Lead" ? leadStatusTag(contact.relation) : `<span class="tag ${contact.relation === "Fechado" ? "green" : "blue"}">${escapeHtml(contact.relation)}</span>`}</td><td><button class="btn small" type="button" data-action="${contact.action}" data-id="${contact.id}">Abrir</button></td></tr>`).join("")}</tbody></table></div>` : `<div class="empty"><strong>Sua base está vazia</strong>Comece registrando contatos na Caixa de entrada.</div>`}</section>`;
+    }
+
+    function renderClients() {
+      const clients = state.deals.filter(deal => deal.stage === "Fechado");
+      const total = clients.reduce((sum, deal) => sum + Number(deal.value || 0), 0);
+      return `<div class="grid metrics">${renderMetric("Receita fechada", money(total), "Soma dos negócios marcados como fechados")}${renderMetric("Clientes ativos", clients.length, "Registros que saíram do pipeline", "warn")}${renderMetric("Ticket médio", clients.length ? money(total / clients.length) : money(0), "Valor médio por cliente")}${renderMetric("Base em negociação", money(activeDeals().reduce((sum, deal) => sum + Number(deal.value || 0), 0)), "Oportunidades ainda em aberto")}</div><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Receita</p><h2>Clientes fechados</h2><p>Registros fechados permanecem disponíveis para histórico e reativação.</p></div></div>${clients.length ? `<div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Serviço</th><th>Valor</th><th>Fechado em</th><th>Contato</th><th></th></tr></thead><tbody>${clients.map(deal => `<tr><td><strong>${escapeHtml(deal.company)}</strong><br><small>${escapeHtml(deal.title)}</small></td><td>${escapeHtml(deal.service || "-")}</td><td><strong>${money(deal.value)}</strong></td><td>${deal.closedAt ? formatDate(deal.closedAt.slice(0, 10)) : "-"}</td><td>${escapeHtml(deal.whatsapp || deal.email || "-")}</td><td><button class="btn small" type="button" data-action="edit-deal" data-id="${deal.id}">Abrir</button></td></tr>`).join("")}</tbody></table></div>` : `<div class="empty"><strong>Ainda não há clientes fechados</strong>Quando uma oportunidade for movida para “Fechado”, ela aparecerá aqui.</div>`}</section>`;
+    }
+
+    function messageTemplate(record) { return generateCezarMessage(record, cezarRecommendation(record).intent); }
+
+    function renderProspecting() {
+      const hasQuery = prospectingQuery.segment && prospectingQuery.city;
+      const query = `${prospectingQuery.segment} em ${prospectingQuery.city}`;
+      const mapUrl = hasQuery ? `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed` : "";
+      return `
+        <section class="card prospecting-form">
+          <div class="section-head"><div><p class="section-kicker">Pesquisa integrada</p><h2>Encontre empresas sem sair da operação</h2><p>Pesquise por segmento e região, avalie sinais comerciais e cadastre apenas quem tiver motivo real para uma abordagem.</p></div>${hasQuery ? `<button class="btn small" type="button" data-action="clear-prospecting">Limpar busca</button>` : ""}</div>
+          <form class="prospecting-grid" id="prospectingSearchForm"><div class="field"><label>Segmento</label><input name="segment" required value="${escapeHtml(prospectingQuery.segment)}" placeholder="Ex.: clínica odontológica"></div><div class="field"><label>Cidade ou região</label><input name="city" required value="${escapeHtml(prospectingQuery.city)}" placeholder="Ex.: Ribeirão Preto - SP"></div><button class="btn primary" type="submit">Pesquisar aqui</button></form>
+        </section>
+        <div class="research-shell">
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Mapa e empresas</p><h2>${hasQuery ? escapeHtml(query) : "Comece definindo o recorte"}</h2><p>O mapa permanece dentro do CRM para consulta. Abra os perfis, observe o negócio e registre os dados manualmente.</p></div></div>
+            ${hasQuery ? `<iframe class="map-frame" title="Resultados da pesquisa de empresas" src="${mapUrl}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>` : `<div class="map-empty"><div><strong>Pesquisa ainda não iniciada</strong><p>Informe um segmento e uma cidade para carregar os resultados nesta área.</p></div></div>`}
+          </section>
+          <aside class="grid">
+            <section class="card card-pad">
+              <div class="section-head"><div><p class="section-kicker">Critério VERTA</p><h2>Valide antes de cadastrar</h2><p>Não transforme toda empresa encontrada em lead.</p></div></div>
+              <div class="research-checklist">
+                <label class="check-row"><input type="checkbox"><span>Existe uma oferta ou serviço compreensível.</span></label>
+                <label class="check-row"><input type="checkbox"><span>Há um problema observável em aquisição, presença ou comercial.</span></label>
+                <label class="check-row"><input type="checkbox"><span>O porte e a região fazem sentido para a VERTA.</span></label>
+                <label class="check-row"><input type="checkbox"><span>Encontrei canal público e contexto suficiente para contato.</span></label>
+                <label class="check-row"><input type="checkbox"><span>Consigo explicar por que essa empresa entrou na lista.</span></label>
+              </div>
+              <button class="btn primary" type="button" data-action="new-prospect" style="width:100%;margin-top:15px" ${hasQuery ? "" : "disabled"}>Cadastrar empresa avaliada</button>
+            </section>
+            <section class="card card-pad">
+              <div class="section-head"><div><p class="section-kicker">Fluxo</p><h2>Pesquisa → contato</h2></div></div>
+              <div class="list"><div class="list-item"><div><p class="item-title">1. Observar</p><p class="item-meta">Site, perfil, avaliações, comunicação e sinais da operação.</p></div></div><div class="list-item"><div><p class="item-title">2. Registrar</p><p class="item-meta">Empresa, pessoa, telefone, origem, serviço provável e motivo do fit.</p></div></div><div class="list-item"><div><p class="item-title">3. Pedir ao Cezar</p><p class="item-meta">O assistente usa o cadastro para preparar uma abordagem contextual.</p></div></div></div>
+            </section>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderCezar() {
+      const records = communicationRecords();
+      let selected = relatedRecord(cezarDraft.recordId) || records[0];
+      if (selected && cezarDraft.recordId !== selected.id) {
+        cezarDraft.recordId = selected.id;
+        cezarDraft.intent = cezarRecommendation(selected).intent;
+        cezarDraft.text = generateCezarMessage(selected, cezarDraft.intent, cezarDraft.instruction);
+      }
+      const recommendation = cezarRecommendation(selected);
+      const queue = [...state.messages].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+      return `
+        <section class="card cezar-header"><div class="cezar-avatar">CZ</div><div><h2>Cezar · Secretaria Comercial VERTA</h2><p>Prepara mensagens com o repertório da VERTA, usa os dados do CRM e registra cada autorização. Ele nunca escolhe um número fora da sua base.</p></div><div class="status-line"><span class="status-dot"></span>Modo assistido</div></section>
+        <div class="assistant-grid">
+          <section class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Nova solicitação</p><h2>O que o Cezar deve preparar?</h2><p>Escolha um contato cadastrado e a finalidade. O texto pode ser ajustado antes da revisão.</p></div></div>
+            ${records.length ? `<form class="assistant-form" id="cezarForm">
+              <div class="form-grid"><div class="field"><label>Contato cadastrado</label><select id="cezarRecord" name="recordId">${records.map(record => `<option value="${record.id}" ${selected?.id === record.id ? "selected" : ""}>${escapeHtml(record.company)} · ${recordType(record)}</option>`).join("")}</select></div><div class="field"><label>Finalidade</label><select id="cezarIntent" name="intent">${messageIntents.map(intent => `<option ${cezarDraft.intent === intent ? "selected" : ""}>${intent}</option>`).join("")}</select></div></div>
+              <div class="recommendation"><strong>${escapeHtml(recommendation.title)}</strong>${escapeHtml(recommendation.reason)}</div>
+              <div class="field"><label>Informação específica para esta mensagem</label><textarea id="cezarInstruction" name="instruction" placeholder="Ex.: boleto de julho vence dia 20; reunião mudou para quinta às 14h; comentar que o perfil não tem CTA.">${escapeHtml(cezarDraft.instruction)}</textarea></div>
+              <div class="field"><label>Rascunho preparado</label><textarea id="cezarText" name="text">${escapeHtml(cezarDraft.text || generateCezarMessage(selected, cezarDraft.intent, cezarDraft.instruction))}</textarea></div>
+              <div class="button-row"><button class="btn" type="button" data-action="generate-cezar">Gerar nova sugestão</button><button class="btn" type="button" data-action="copy-cezar">Copiar</button><button class="btn primary" type="submit">Revisar e autorizar</button></div>
+            </form>` : `<div class="empty"><strong>O Cezar precisa de um contato cadastrado</strong>Adicione um lead, oportunidade ou cliente com WhatsApp antes de solicitar uma mensagem.<br><button class="btn primary" type="button" data-action="new-lead" style="margin-top:12px">+ Novo contato</button></div>`}
+          </section>
+          <aside class="card card-pad">
+            <div class="section-head"><div><p class="section-kicker">Repertório aplicado</p><h2>Como o Cezar decide</h2><p>Ele combina finalidade, etapa, serviço, histórico e sua instrução.</p></div></div>
+            <div class="list"><div class="list-item"><div><p class="item-title">Primeiro contato</p><p class="item-meta">Observação real, apresentação curta e uma pergunta de diagnóstico.</p></div></div><div class="list-item"><div><p class="item-title">Follow-up</p><p class="item-meta">Retoma o ponto pendente e pede um próximo passo objetivo.</p></div></div><div class="list-item"><div><p class="item-title">Cobrança e aviso</p><p class="item-meta">Tom respeitoso, referência clara e espaço para correção.</p></div></div><div class="list-item"><div><p class="item-title">Reativação</p><p class="item-meta">Reconhece o tempo passado e verifica se a prioridade mudou.</p></div></div></div>
+            <div class="notice" style="margin-top:14px"><b>Limite atual:</b> esta versão prepara e abre a conversa pelo WhatsApp. Envio automático real e leitura de respostas exigem backend seguro e conexão oficial com a WhatsApp Business Platform.</div>
+          </aside>
+        </div>
+        <section class="card card-pad" style="margin-top:14px">
+          <div class="section-head"><div><p class="section-kicker">Controle</p><h2>Fila de mensagens</h2><p>Rascunhos, autorizações e confirmações ficam registrados no próprio CRM.</p></div><span class="tag">${queue.length} registro(s)</span></div>
+          ${queue.length ? `<div class="message-queue">${queue.map(messageQueueItem).join("")}</div>` : `<div class="empty"><strong>Nenhuma mensagem preparada</strong>O primeiro rascunho criado pelo Cezar aparecerá aqui.</div>`}
+        </section>
+      `;
+    }
+
+    function messageQueueItem(message) {
+      const record = relatedRecord(message.recordId);
+      const actions = message.status === "Rascunho" ? `<button class="btn small primary" type="button" data-action="review-message" data-id="${message.id}">Revisar</button>` : message.status === "Aberta no WhatsApp" ? `<button class="btn small" type="button" data-action="review-message" data-id="${message.id}">Abrir novamente</button><button class="btn small primary" type="button" data-action="mark-message-sent" data-id="${message.id}">Marcar enviada</button>` : message.status === "Rejeitada" ? `<button class="btn small" type="button" data-action="reuse-message" data-id="${message.id}">Revisar texto</button>` : "";
+      return `<article class="message-item"><div><h3>${escapeHtml(record?.company || "Contato removido")} · ${escapeHtml(message.intent)}</h3><p>${escapeHtml(shortContext(message.text, "Sem texto"))}<br>${formatDateTime(message.createdAt)}</p></div><div class="item-actions">${messageStatusTag(message.status)}${actions}</div></article>`;
+    }
+
+    function renderMaterials() {
+      const labels = { metodo: "Método VERTA", servicos: "Serviços", funil: "Funil comercial", abordagens: "Abordagens", operacao: "Operação e referências" };
+      const renders = { metodo: renderMethodMaterial, servicos: renderServicesMaterial, funil: renderFunnelMaterial, abordagens: renderApproachesMaterial, operacao: renderOperationsMaterial };
+      return `<div class="material-tabs">${Object.entries(labels).map(([key, label]) => `<button class="tab ${materialTab === key ? "active" : ""}" type="button" data-action="material-tab" data-tab="${key}">${label}</button>`).join("")}</div>${renders[materialTab]()}`;
+    }
+
+    function renderMethodMaterial() {
+      return `<section class="card knowledge-hero"><p class="section-kicker">Base institucional</p><h2>A VERTA organiza aquisição, conversão e acompanhamento para negócios venderem com mais clareza.</h2><p>Não vendemos ações isoladas como se fossem solução universal. Primeiro entendemos o gargalo; depois conectamos oferta, canal, página, atendimento e rotina comercial no nível necessário para cada operação.</p></section>
+      <div class="principle-grid"><article class="principle"><b>V · Visão</b><h3>Diagnosticar antes de executar</h3><p>Objetivo, oferta, público, operação atual, restrições e indicadores.</p></article><article class="principle"><b>E · Estratégia</b><h3>Escolher o caminho</h3><p>Definir prioridade, canal, mensagem, conversão e responsabilidade.</p></article><article class="principle"><b>R · Rotina</b><h3>Transformar em processo</h3><p>Campanhas, conteúdo, atendimento, tarefas e cadência com dono e prazo.</p></article><article class="principle"><b>T · Teste</b><h3>Validar hipóteses</h3><p>Testar uma variável relevante por vez e registrar o que mudou.</p></article></div>
+      <div class="grid two-col" style="margin-top:14px"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">A · Aprendizado</p><h2>Melhorar com evidência</h2></div></div><p class="item-meta">A VERTA lê qualidade do lead, taxa de resposta, conversão, custo, receita e gargalos do processo. O objetivo é transformar execução em decisões melhores, sem prometer resultado garantido.</p></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Quem somos</p><h2>Parceiro de estrutura digital e comercial</h2></div></div><p class="item-meta">A VERTA atua entre marketing e vendas: ajuda o negócio a atrair atenção, apresentar melhor sua oferta, receber contatos e acompanhar oportunidades até uma decisão clara.</p></section></div>`;
+    }
+
+    function renderServicesMaterial() {
+      return `<section class="card knowledge-hero"><p class="section-kicker">Catálogo de soluções</p><h2>O serviço certo depende do gargalo certo.</h2><p>Estas descrições deixam claro o que a VERTA resolve, para quem cada solução faz sentido e como o trabalho é conduzido.</p></section><div class="service-grid" style="margin-top:14px">${serviceCatalog.map(service => `<article class="service-card"><span class="tag green">${escapeHtml(service.group)}</span><h3>${escapeHtml(service.name)}</h3><p>${escapeHtml(service.promise)}</p><p><b>Faz sentido para:</b> ${escapeHtml(service.fit)}</p><ul>${service.work.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article>`).join("")}</div>`;
+    }
+
+    function renderFunnelMaterial() {
+      return `<section class="card knowledge-hero"><p class="section-kicker">Funil comercial VERTA</p><h2>Cada etapa existe para responder uma pergunta e terminar com um próximo passo.</h2><p>O funil evita dois erros comuns: tratar todo contato como oportunidade e deixar negociações abertas sem ação definida.</p></section><div class="funnel" style="margin-top:14px">${funnelPhases.map((phase, index) => `<article class="funnel-step"><b>${String(index + 1).padStart(2, "0")}</b><h3>${escapeHtml(phase.name)}</h3><p>${escapeHtml(phase.goal)}</p><p><strong>Saída:</strong> ${escapeHtml(phase.exit)}</p></article>`).join("")}</div><div class="grid three-col" style="margin-top:14px"><section class="card card-pad"><p class="section-kicker">Qualificação</p><h3 class="item-title">Existe problema e prioridade?</h3><p class="item-meta">Cenário atual, impacto, urgência, decisor, capacidade de atendimento e investimento plausível.</p></section><section class="card card-pad"><p class="section-kicker">Regra de avanço</p><h3 class="item-title">Sem próximo passo, não avançou</h3><p class="item-meta">Toda oportunidade precisa de ação, responsável e data. “Aguardando” sem acordo não é etapa.</p></section><section class="card card-pad"><p class="section-kicker">Indicadores</p><h3 class="item-title">Meça o que muda decisão</h3><p class="item-meta">Taxa de resposta, qualificação, propostas, fechamento, ciclo, ticket, origem e motivos de perda.</p></section></div>`;
+    }
+
+    function renderApproachesMaterial() {
+      return `<div class="grid two-col"><article class="script-block"><h3>Primeiro contato consultivo</h3><p>“Olá, [nome], tudo bem? Sou o Heitor, da VERTA. Analisei a [empresa] e vi uma possível oportunidade em [ponto observado]. Antes de mandar algo genérico, queria entender: hoje vocês já trabalham essa frente internamente ou com algum parceiro?”</p></article><article class="script-block"><h3>Quando já existe fornecedor</h3><p>“Perfeito. Para eu não te mandar algo repetido, posso entender como vocês trabalham hoje? O foco está mais em conteúdo, tráfego pago, captação pelo WhatsApp ou organização do comercial?”</p></article><article class="script-block"><h3>Follow-up de proposta</h3><p>“Queria confirmar se você conseguiu avaliar a proposta e se existe algum ponto que eu possa esclarecer. Faz sentido definirmos o próximo passo até [data]?”</p></article><article class="script-block"><h3>Reativação</h3><p>“Nós conversamos há um tempo sobre [serviço], mas entendi que não era o melhor momento. Essa prioridade mudou ou ainda faz mais sentido deixar para depois?”</p></article><article class="script-block"><h3>Cobrança respeitosa</h3><p>“Passando para lembrar do pagamento referente a [período/serviço]. Se já tiver sido realizado, pode desconsiderar e me avisar para eu atualizar o controle. Se precisar, envio os dados novamente.”</p></article><article class="script-block"><h3>Encerramento sem resposta</h3><p>“Como não consegui retorno, vou encerrar este acompanhamento para não insistir. Se essa prioridade voltar, fico à disposição para retomarmos com contexto.”</p></article></div><div class="notice" style="margin-top:14px"><b>Regra de linguagem:</b> contexto real, mensagem curta, uma pergunta por vez e próximo passo claro. Evite promessa garantida, falsa intimidade, urgência inventada e sequência insistente.</div>`;
+    }
+
+    function renderOperationsMaterial() {
+      return `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Cadência base</p><h2>Prospecção consultiva</h2></div></div><div class="list"><div class="list-item"><div><p class="item-title">Dia 0 · Contexto e pergunta</p><p class="item-meta">Abra a conversa sem anexar proposta ou portfólio genérico.</p></div></div><div class="list-item"><div><p class="item-title">Dia 2 · Novo valor</p><p class="item-meta">Retome com uma observação específica ou pergunta mais simples.</p></div></div><div class="list-item"><div><p class="item-title">Dia 6 · Encerramento</p><p class="item-meta">Dê espaço, registre o motivo e só reative com novo contexto.</p></div></div></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Governança</p><h2>Contato responsável</h2></div></div><div class="list"><div class="list-item"><div><p class="item-title">Finalidade e necessidade</p><p class="item-meta">Registre por que o contato foi cadastrado e use apenas dados necessários.</p></div></div><div class="list-item"><div><p class="item-title">Transparência</p><p class="item-meta">Identifique a VERTA, explique o motivo e respeite pedido para não contatar.</p></div></div><div class="list-item"><div><p class="item-title">Aprovação humana</p><p class="item-meta">Cezar prepara; Heitor revisa e autoriza toda mensagem individual.</p></div></div></div></section></div><section class="card card-pad" style="margin-top:14px"><div class="section-head"><div><p class="section-kicker">Referências validadas</p><h2>O que foi aproveitado</h2><p>Síntese aplicada à realidade enxuta da VERTA, sem copiar estrutura ou promessa de outra marca.</p></div></div><div class="grid two-equal"><p class="source-note"><a href="https://knowledge.hubspot.com/prospecting/use-the-prospecting-queue" target="_blank" rel="noopener">HubSpot</a>: fila de prospecção guiada com tarefas e ações no mesmo espaço.<br><a href="https://www.rdstation.com/produtos/crm/solucoes/para-vendedores/" target="_blank" rel="noopener">RD Station CRM</a>: funil, histórico, WhatsApp, tarefas e sugestões de próximos passos.<br><a href="https://exactsales.com.br/funcionalidades-exact-spotter/" target="_blank" rel="noopener">Exact Spotter</a>: roteiros de qualificação e abordagens integrados à prospecção.</p><p class="source-note"><a href="https://www.agendor.com.br/solucoes/ava" target="_blank" rel="noopener">Agendor Ava</a>: assistente com resumo e sugestão de ações, acionado pelo usuário.<br><a href="https://www.kommo.com/br/whatsapp/" target="_blank" rel="noopener">Kommo</a>: base de conhecimento, contexto de conversa e WhatsApp centralizado.<br><a href="https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes/guia_orientativo_hipoteses_legais_tratamento_de_dados_pessoais_legitimo_interesse" target="_blank" rel="noopener">ANPD</a>: finalidade, necessidade, balanceamento, salvaguardas e transparência no uso de dados.</p></div></section>`;
+    }
+
+    function renderContent() {
+      const contents = state.contentItems || [];
+      const weekStart = mondayOf();
+      const weekEnd = addDays(weekStart, 4);
+      const weekItems = contents.filter(item => item.publishDate && item.publishDate >= weekStart && item.publishDate <= weekEnd);
+      const pinnedOrder = { VER: 0, "TA.": 1, ADS: 2 };
+      const pinned = contents.filter(item => item.pinned).sort((a, b) => (pinnedOrder[a.pinnedWord] ?? 99) - (pinnedOrder[b.pinnedWord] ?? 99));
+      const planned = contents.filter(item => item.status !== "Publicado").length;
+      const ready = contents.filter(item => ["Pronto", "Agendado"].includes(item.status)).length;
+      const published = contents.filter(item => item.status === "Publicado").length;
+      const calendar = contents.filter(item => !item.pinned && (contentFilter === "Todos" || item.status === contentFilter)).sort((a, b) => String(a.publishDate || "9999-12-31").localeCompare(String(b.publishDate || "9999-12-31")) || String(a.createdAt).localeCompare(String(b.createdAt)));
+      const routineMonday = nextMonday();
+      const nextTheme = contentThemeForWeek(routineMonday);
+      return `
+        <section class="card content-hero">
+          <div class="section-head"><div><p class="section-kicker">Rotina editorial VERTA</p><h2>Conteúdo para gerar confiança, mostrar como trabalhamos e abrir conversas comerciais.</h2><p>Ritmo inicial: 3 Reels, 2 carrosséis e Stories de apoio de segunda a sexta. Heitor aparece nos bastidores e opiniões; o Cezar prepara a base e toda publicação continua dependendo da sua revisão.</p></div><div class="button-row"><button class="btn" type="button" data-action="new-content">+ Novo conteúdo</button><button class="btn primary" type="button" data-action="create-content-week">Criar próxima semana</button></div></div>
+          <div class="tag-row"><span class="tag green">Próximo tema: ${escapeHtml(nextTheme)}</span><span class="tag">Semana de ${formatDate(routineMonday)}</span><a class="btn small" href="https://business.facebook.com/" target="_blank" rel="noopener">Abrir Meta Business Suite</a></div>
+        </section>
+
+        <div class="grid metrics" style="margin-top:14px">
+          ${renderMetric("No planejamento", planned, "Ideias e peças ainda não publicadas")}
+          ${renderMetric("Nesta semana", weekItems.length, `${formatDate(weekStart)} a ${formatDate(weekEnd)}`, "warn")}
+          ${renderMetric("Prontos / agendados", ready, "Peças que já podem entrar no calendário")}
+          ${renderMetric("Publicados", published, "Histórico registrado no CRM")}
+        </div>
+
+        <section style="margin-top:14px">
+          <div class="section-head"><div><p class="section-kicker">Padrão semanal</p><h2>O papel de cada dia</h2><p>O tema do serviço muda por semana; a função editorial de cada dia permanece.</p></div></div>
+          <div class="content-week">${contentRoutine.map(item => `<article class="content-day"><b>${escapeHtml(item.day)}</b><h3>${escapeHtml(item.focus)}</h3><div class="tag-row"><span class="tag green">${escapeHtml(item.format)}</span><span class="tag">${escapeHtml(item.pillar)}</span></div><p>${escapeHtml(item.feed)}</p><p><strong>Stories:</strong> ${escapeHtml(item.story)}</p></article>`).join("")}</div>
+        </section>
+
+        <section style="margin-top:14px">
+          <div class="section-head"><div><p class="section-kicker">Reinício do Instagram</p><h2>Trilogia fixada · VER | TA. | ADS</h2><p>As três capas formam a marca no grid; cada publicação também funciona sozinha como apresentação estratégica.</p></div></div>
+          ${pinned.length ? `<div class="pinned-grid">${pinned.map(item => `<article class="pinned-card"><div class="pinned-cover">${escapeHtml(item.pinnedWord || "VERTA")}</div><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.hook || item.notes || "Conteúdo fixado da VERTA.")}</p><div class="tag-row" style="margin-top:9px">${contentStatusTag(item.status)}<span class="tag">${escapeHtml(item.format)}</span></div><div class="item-actions"><button class="btn small" type="button" data-action="prepare-content-cezar" data-id="${item.id}">Cezar</button><button class="btn small" type="button" data-action="edit-content" data-id="${item.id}">Editar</button></div></div></article>`).join("")}</div>` : `<div class="empty"><strong>Nenhum post fixado</strong>Crie os três conteúdos que apresentam a VERTA, o método e os serviços.</div>`}
+        </section>
+
+        <div class="grid two-col" style="margin-top:14px">
+          <section>
+            <div class="section-head"><div><p class="section-kicker">Calendário editorial</p><h2>Fila de produção</h2><p>Avance cada peça até Publicado e mantenha o histórico.</p></div><button class="btn primary" type="button" data-action="new-content">+ Conteúdo</button></div>
+            <div class="material-tabs">${["Todos", ...contentStatuses].map(status => `<button class="tab ${contentFilter === status ? "active" : ""}" type="button" data-action="content-filter" data-filter="${status}">${status}</button>`).join("")}</div>
+            ${calendar.length ? `<div class="content-list">${calendar.map(contentRow).join("")}</div>` : `<div class="empty"><strong>Nenhum conteúdo nesta visão</strong>Use “Criar próxima semana” para montar cinco pautas com datas, Stories e tema definido.</div>`}
+          </section>
+          <aside class="grid" style="align-content:start">
+            <section class="card content-cezar"><p class="section-kicker">Secretário de conteúdo</p><h3>Cezar prepara; você dirige e aprova</h3><p>Em qualquer pauta, use o botão Cezar para gerar gancho, roteiro, legenda, CTA e Stories de apoio. O texto fica editável e nada é publicado automaticamente.</p></section>
+            <section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Produção em lote</p><h2>Bloco de preparação</h2></div></div><div class="list"><div class="list-item"><div><p class="item-title">Sexta · análise</p><p class="item-meta">Revise alcance, retenção, salvamentos, respostas, visitas ao perfil e conversas geradas.</p></div></div><div class="list-item"><div><p class="item-title">Sábado ou domingo · lote</p><p class="item-meta">Escolha cinco pautas, escreva, grave os Reels e deixe carrosséis encaminhados.</p></div></div><div class="list-item"><div><p class="item-title">Antes de publicar</p><p class="item-meta">Revise capa, gancho, legenda, CTA, links, ortografia e contexto comercial.</p></div></div></div></section>
+            <section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Referências pesquisadas</p><h2>Por que esta rotina</h2></div></div><p class="source-note"><a href="https://rockcontent.com/br/blog/calendario-editorial/" target="_blank" rel="noopener">Rock Content</a> e <a href="https://www.rdstation.com/blog/marketing/calendario-editorial-como-fazer/" target="_blank" rel="noopener">RD Station</a>: calendário, consistência, visão do fluxo e aprendizado por desempenho.<br><a href="https://v4company.com/blog/artigos/como-fazer-uma-linha-editorial" target="_blank" rel="noopener">V4 Company</a>: bastidores e cotidiano aproximam a marca do público.<br><a href="https://www.facebook.com/help/389849807718635" target="_blank" rel="noopener">Meta Business Suite</a>: preparação e agendamento das publicações.</p></section>
+          </aside>
+        </div>
+      `;
+    }
+
+    function contentRow(item) {
+      const weekday = item.publishDate ? new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(new Date(`${item.publishDate}T12:00:00`)) : "sem data";
+      const nextStatus = nextContentStatus(item.status);
+      return `<article class="content-row"><div class="content-date">${formatDate(item.publishDate)}<small>${escapeHtml(weekday)}${item.publishTime ? ` · ${escapeHtml(item.publishTime)}` : ""}</small></div><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.format)} · ${escapeHtml(item.pillar)}${item.storyPrompt ? ` · Stories preparados` : ""}</p></div><div class="item-actions">${contentStatusTag(item.status)}<button class="btn small" type="button" data-action="prepare-content-cezar" data-id="${item.id}">Cezar</button>${item.status !== "Publicado" ? `<button class="btn small" type="button" data-action="advance-content" data-id="${item.id}" title="Avançar para ${escapeHtml(nextStatus)}">Avançar</button>` : ""}<button class="btn small" type="button" data-action="edit-content" data-id="${item.id}">Editar</button></div></article>`;
+    }
+
+    function renderAutomations() {
+      const settings = state.settings;
+      return `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Rotinas ativas</p><h2>Automações da VERTA</h2><p>Regras aplicadas aos registros da sua conta e sincronizadas na nuvem.</p></div></div><div class="automation-list"><article class="automation"><div><h3>Organizar primeiro contato</h3><p>Ao salvar um contato novo, cria uma tarefa de primeiro contato para hoje.</p></div>${switchControl("autoNewLeadTask", settings.autoNewLeadTask)}</article><article class="automation"><div><h3>Follow-up após proposta</h3><p>Ao mover uma oportunidade para “Proposta enviada”, cria uma tarefa para retomar em dois dias úteis.</p></div>${switchControl("autoProposalTask", settings.autoProposalTask)}</article><article class="automation"><div><h3>Alertar oportunidades sem ação</h3><p>Mostra um aviso na Visão geral quando uma oportunidade não tiver próximo passo definido.</p></div>${switchControl("healthAlerts", settings.healthAlerts)}</article><article class="automation"><div><h3>Aprovação obrigatória do Cezar</h3><p>Toda mensagem preparada exige revisão do destinatário, do texto e uma autorização explícita antes de abrir o WhatsApp.</p></div><span class="tag green">Sempre ativa</span></article></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Como funciona</p><h2>Assistência com controle humano</h2></div></div><div class="list"><div class="list-item"><div><p class="item-title">Contato novo</p><p class="item-meta">Entra na Caixa de entrada e ganha uma tarefa de contato.</p></div></div><div class="list-item"><div><p class="item-title">Contato qualificado</p><p class="item-meta">Vira oportunidade e recebe uma ação de diagnóstico.</p></div></div><div class="list-item"><div><p class="item-title">Cezar prepara</p><p class="item-meta">Consulta cadastro, serviço, etapa e repertório para montar o rascunho.</p></div></div><div class="list-item"><div><p class="item-title">Heitor autoriza</p><p class="item-meta">Somente depois da confirmação o CRM abre a conversa no WhatsApp.</p></div></div></div><div class="notice" style="margin-top:14px"><b>Próxima integração:</b> o envio pela API oficial e o recebimento de respostas ainda exigem a WhatsApp Business Platform. Sua aprovação continuará obrigatória.</div></section></div>`;
+    }
+
+    function switchControl(key, checked) { return `<label class="switch" title="Ativar ou desativar"><input type="checkbox" data-setting="${key}" ${checked ? "checked" : ""}><span></span></label>`; }
+
+    function renderConfig() {
+      const accountEmail = authUser?.email || "Conta não identificada";
+      return `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Conta e sincronização</p><h2>Dados protegidos na nuvem</h2><p>${escapeHtml(accountEmail)} · <span id="configCloudStatus">${escapeHtml(cloudStatus.text)}</span></p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="sync-now">Sincronizar agora</button><button class="btn" type="button" data-action="logout">Sair da conta</button></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Portabilidade</p><h2>Backup independente</h2><p>A nuvem salva automaticamente. O JSON continua disponível como cópia adicional sob seu controle.</p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="backup">Baixar backup JSON</button><button class="btn" type="button" data-action="import">Importar backup</button><button class="btn" type="button" data-action="export-csv">Exportar contatos em CSV</button></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Manutenção</p><h2>Limpar todos os dados</h2><p>Esta ação limpa a base da sua conta e sincroniza a alteração com os outros dispositivos.</p></div></div><button class="btn danger" type="button" data-action="reset">Limpar base da conta</button></section></div>`;
+    }
+
+    function render() {
+      const [eyebrow, title, subtitle] = viewMeta[currentView];
+      document.querySelector("#viewEyebrow").textContent = eyebrow;
+      document.querySelector("#viewTitle").textContent = title;
+      document.querySelector("#viewSubtitle").textContent = subtitle;
+      renderNav();
+      const appView = document.querySelector("#appView");
+      const renders = { dashboard: renderDashboard, leads: renderLeads, pipeline: renderPipeline, agenda: renderAgenda, contatos: renderContacts, clientes: renderClients, prospectar: renderProspecting, cezar: renderCezar, automacoes: renderAutomations, conteudo: renderContent, materiais: renderMaterials, config: renderConfig };
+      appView.innerHTML = renders[currentView]();
+      const leadFilterSelect = document.querySelector("#leadFilter");
+      if (leadFilterSelect) leadFilterSelect.value = leadFilter;
+      bindViewInputs();
+    }
+
+    function bindViewInputs() {
+      const leadInput = document.querySelector("#leadSearch");
+      if (leadInput) leadInput.addEventListener("input", event => { leadSearch = event.target.value; render(); restoreFocus("#leadSearch", leadSearch); });
+      const leadFilterSelect = document.querySelector("#leadFilter");
+      if (leadFilterSelect) leadFilterSelect.addEventListener("change", event => { leadFilter = event.target.value; render(); });
+      const pipelineInput = document.querySelector("#pipelineSearch");
+      if (pipelineInput) pipelineInput.addEventListener("input", event => { pipelineSearch = event.target.value; render(); restoreFocus("#pipelineSearch", pipelineSearch); });
+      const cezarRecord = document.querySelector("#cezarRecord");
+      if (cezarRecord) cezarRecord.addEventListener("change", event => { cezarDraft.recordId = event.target.value; const record = relatedRecord(cezarDraft.recordId); cezarDraft.intent = cezarRecommendation(record).intent; cezarDraft.instruction = ""; cezarDraft.text = generateCezarMessage(record, cezarDraft.intent); render(); });
+      const cezarIntent = document.querySelector("#cezarIntent");
+      if (cezarIntent) cezarIntent.addEventListener("change", event => { cezarDraft.intent = event.target.value; cezarDraft.text = generateCezarMessage(relatedRecord(cezarDraft.recordId), cezarDraft.intent, cezarDraft.instruction); render(); });
+      const cezarInstruction = document.querySelector("#cezarInstruction");
+      if (cezarInstruction) cezarInstruction.addEventListener("input", event => { cezarDraft.instruction = event.target.value; });
+      const cezarText = document.querySelector("#cezarText");
+      if (cezarText) cezarText.addEventListener("input", event => { cezarDraft.text = event.target.value; });
+    }
+
+    function restoreFocus(selector, value) { requestAnimationFrame(() => { const input = document.querySelector(selector); if (input) { input.focus(); input.setSelectionRange(value.length, value.length); } }); }
+    function setView(view) { currentView = view; document.querySelector("#sidebar").classList.remove("open"); render(); window.scrollTo(0, 0); }
+
+    function openModal(name) { document.querySelector(`#${name}`).classList.add("open"); }
+    function closeModal(name) { document.querySelector(`#${name}`).classList.remove("open"); }
+    function closeAllModals() { ["leadModal", "dealModal", "taskModal", "contentModal", "confirmModal", "messageApprovalModal"].forEach(closeModal); }
+
+    function openLeadModal(id, preset = {}) {
+      const form = document.querySelector("#leadForm");
+      form.reset();
+      form.elements.id.value = "";
+      form.elements.priority.value = "Média";
+      form.elements.status.value = "Novo";
+      form.elements.contactBasis.value = "Não definida";
+      Object.entries(preset).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value; });
+      document.querySelector("#deleteLeadBtn").style.visibility = "hidden";
+      document.querySelector("#leadModalTitle").textContent = "Novo contato";
+      if (id) {
+        const lead = state.leads.find(item => item.id === id);
+        if (!lead) return;
+        Object.entries(lead).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value ?? ""; });
+        document.querySelector("#deleteLeadBtn").style.visibility = "visible";
+        document.querySelector("#leadModalTitle").textContent = "Editar contato";
+      }
+      openModal("leadModal");
+    }
+
+    function openDealModal(id, initialStage, fromLead) {
+      const form = document.querySelector("#dealForm");
+      form.reset();
+      form.elements.stage.innerHTML = stages.map(stage => `<option>${stage}</option>`).join("");
+      form.elements.id.value = "";
+      form.elements.leadId.value = "";
+      form.elements.stage.value = initialStage || "Diagnóstico";
+      form.elements.priority.value = "Média";
+      form.elements.contactBasis.value = "Não definida";
+      form.elements.nextDate.value = todayISO();
+      form.elements.nextAction.value = "Fazer diagnóstico e entender a necessidade";
+      document.querySelector("#deleteDealBtn").style.visibility = "hidden";
+      document.querySelector("#dealModalTitle").textContent = "Nova oportunidade";
+      if (fromLead) {
+        const lead = state.leads.find(item => item.id === fromLead);
+        if (!lead) return;
+        Object.assign(form.elements, {});
+        const values = { leadId: lead.id, company: lead.company, contact: lead.contact, whatsapp: lead.whatsapp, email: lead.email, source: lead.source, service: lead.interest || "A definir", notes: lead.notes, priority: lead.priority || "Média", contactBasis: lead.contactBasis || "Não definida", title: lead.interest && lead.interest !== "A definir" ? `${lead.interest} · ${lead.company}` : `Oportunidade · ${lead.company}` };
+        Object.entries(values).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value ?? ""; });
+        document.querySelector("#dealModalTitle").textContent = "Qualificar contato";
+      }
+      if (id) {
+        const deal = state.deals.find(item => item.id === id);
+        if (!deal) return;
+        Object.entries(deal).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value ?? ""; });
+        document.querySelector("#deleteDealBtn").style.visibility = "visible";
+        document.querySelector("#dealModalTitle").textContent = "Editar oportunidade";
+      }
+      openModal("dealModal");
+    }
+
+    function openTaskModal(id) {
+      const form = document.querySelector("#taskForm");
+      form.reset();
+      form.elements.id.value = "";
+      form.elements.dueDate.value = todayISO();
+      const records = [...state.leads, ...state.deals].sort((a, b) => a.company.localeCompare(b.company));
+      form.elements.relatedId.innerHTML = `<option value="">Sem vínculo</option>${records.map(record => `<option value="${record.id}">${escapeHtml(record.company)} · ${state.leads.some(lead => lead.id === record.id) ? "Lead" : "Oportunidade"}</option>`).join("")}`;
+      document.querySelector("#deleteTaskBtn").style.visibility = "hidden";
+      document.querySelector("#taskModalTitle").textContent = "Nova tarefa";
+      if (id) {
+        const task = state.tasks.find(item => item.id === id);
+        if (!task) return;
+        Object.entries(task).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = String(value ?? ""); });
+        document.querySelector("#deleteTaskBtn").style.visibility = "visible";
+        document.querySelector("#taskModalTitle").textContent = "Editar tarefa";
+      }
+      openModal("taskModal");
+    }
+
+    function openContentModal(id, preset = {}) {
+      const form = document.querySelector("#contentForm");
+      form.reset();
+      form.elements.id.value = "";
+      form.elements.pinnedWord.value = "";
+      form.elements.format.value = "Reel";
+      form.elements.pillar.value = "Diagnóstico";
+      form.elements.status.value = "Ideia";
+      form.elements.publishTime.value = "";
+      form.elements.pinned.checked = false;
+      document.querySelector("#deleteContentBtn").style.visibility = "hidden";
+      document.querySelector("#contentModalTitle").textContent = "Novo conteúdo";
+      Object.entries(preset).forEach(([key, value]) => {
+        if (!form.elements[key]) return;
+        if (key === "pinned") form.elements.pinned.checked = Boolean(value);
+        else form.elements[key].value = value ?? "";
+      });
+      if (id) {
+        const item = state.contentItems.find(content => content.id === id);
+        if (!item) return;
+        Object.entries(item).forEach(([key, value]) => {
+          if (!form.elements[key]) return;
+          if (key === "pinned") form.elements.pinned.checked = Boolean(value);
+          else form.elements[key].value = value ?? "";
+        });
+        document.querySelector("#deleteContentBtn").style.visibility = "visible";
+        document.querySelector("#contentModalTitle").textContent = "Editar conteúdo";
+      }
+      openModal("contentModal");
+    }
+
+    function generateContentAssetsForForm() {
+      const form = document.querySelector("#contentForm");
+      const data = Object.fromEntries(new FormData(form).entries());
+      if (!String(data.title || "").trim()) return showToast("Dê um título para o Cezar preparar o conteúdo");
+      const assets = generateContentAssets(data);
+      Object.entries(assets).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value; });
+      if (form.elements.status.value === "Ideia") form.elements.status.value = "Roteiro";
+      showToast("Cezar preparou gancho, roteiro, legenda, CTA e Stories");
+    }
+
+    function prepareContentWithCezar(id) {
+      openContentModal(id);
+      generateContentAssetsForForm();
+    }
+
+    function createNextContentWeek() {
+      const monday = nextMonday();
+      const theme = contentThemeForWeek(monday);
+      const now = new Date().toISOString();
+      let created = 0;
+      contentRoutine.forEach(routine => {
+        const automation = `content-week:${monday}:${routine.offset}`;
+        if (state.contentItems.some(item => item.automation === automation)) return;
+        const content = {
+          id: uid("content"), title: contentRoutineTitle(routine, theme), format: routine.format, pillar: routine.pillar,
+          publishDate: addDays(monday, routine.offset), publishTime: "", status: "Ideia", pinned: false, pinnedWord: "",
+          hook: "", script: "", caption: "", cta: "", storyPrompt: routine.story, notes: `Tema da semana: ${theme}. ${routine.feed}`,
+          source: "Rotina editorial", automation, createdAt: now, updatedAt: now
+        };
+        Object.assign(content, generateContentAssets(content));
+        state.contentItems.push(content);
+        created++;
+      });
+      saveState();
+      currentView = "conteudo";
+      render();
+      showToast(created ? `${created} pautas criadas para a semana de ${formatDate(monday)}` : "A próxima semana já está planejada");
+    }
+
+    function advanceContentStatus(id) {
+      const item = state.contentItems.find(content => content.id === id);
+      if (!item) return;
+      const next = nextContentStatus(item.status);
+      item.status = next;
+      item.updatedAt = new Date().toISOString();
+      if (next === "Publicado") item.publishedAt = item.updatedAt;
+      saveState(); render(); showToast(`Conteúdo movido para ${next}`);
+    }
+
+    function createTask(task) { state.tasks.push({ id: uid("task"), title: task.title, dueDate: task.dueDate, relatedId: task.relatedId || "", notes: task.notes || "", done: false, automation: task.automation || "", createdAt: new Date().toISOString() }); }
+    function ensureTask(task) { if (!state.tasks.some(item => item.automation === task.automation && !item.done)) createTask(task); }
+
+    function saveLead(event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.target).entries());
+      const now = new Date().toISOString();
+      const existing = state.leads.find(lead => lead.id === data.id);
+      if (existing) { Object.assign(existing, data, { priority: data.priority || "Média", updatedAt: now }); addActivity("lead", existing.id, "Contato atualizado"); }
+      else {
+        const lead = { ...data, id: uid("lead"), priority: data.priority || "Média", contactBasis: data.contactBasis || "Não definida", status: "Novo", createdAt: now, updatedAt: now };
+        state.leads.push(lead);
+        addActivity("lead", lead.id, "Novo contato registrado na Caixa de entrada");
+        if (state.settings.autoNewLeadTask) ensureTask({ title: "Fazer primeiro contato", dueDate: todayISO(), relatedId: lead.id, notes: "Contato novo", automation: `new-lead:${lead.id}` });
+      }
+      saveState(); closeModal("leadModal"); render(); showToast("Contato salvo na Caixa de entrada");
+    }
+
+    function saveQuickLead(event) {
+      event.preventDefault();
+      const form = event.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const now = new Date().toISOString();
+      const lead = { id: uid("lead"), company: data.company, contact: data.contact || "", whatsapp: data.whatsapp || "", email: "", instagram: "", website: "", source: data.source || "Prospecção manual", segment: "", city: "", interest: "A definir", priority: "Média", contactBasis: "Não definida", notes: "", status: "Novo", createdAt: now, updatedAt: now };
+      state.leads.push(lead); addActivity("lead", lead.id, "Novo contato registrado na Caixa de entrada");
+      if (state.settings.autoNewLeadTask) ensureTask({ title: "Fazer primeiro contato", dueDate: todayISO(), relatedId: lead.id, notes: "Contato novo", automation: `new-lead:${lead.id}` });
+      saveState(); form.reset(); render(); showToast("Contato salvo e follow-up organizado");
+    }
+
+    function saveDeal(event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.target).entries());
+      data.value = Number(data.value || 0);
+      const now = new Date().toISOString();
+      const existing = state.deals.find(deal => deal.id === data.id);
+      if (existing) {
+        const previousStage = existing.stage;
+        Object.assign(existing, data, { updatedAt: now, closedAt: data.stage === "Fechado" && previousStage !== "Fechado" ? now : existing.closedAt || "" });
+        addActivity("deal", existing.id, previousStage !== data.stage ? `Oportunidade movida: ${previousStage} → ${data.stage}` : "Oportunidade atualizada");
+        applyProposalAutomation(existing, previousStage);
+      } else {
+        const deal = { ...data, id: uid("deal"), createdAt: now, updatedAt: now, closedAt: data.stage === "Fechado" ? now : "" };
+        state.deals.push(deal);
+        if (data.leadId) {
+          const lead = state.leads.find(item => item.id === data.leadId);
+          if (lead) { lead.status = "Qualificado"; lead.dealId = deal.id; lead.updatedAt = now; state.tasks.forEach(task => { if (task.relatedId === lead.id) task.relatedId = deal.id; }); }
+        }
+        addActivity("deal", deal.id, "Oportunidade criada no pipeline");
+        applyProposalAutomation(deal, "");
+      }
+      saveState(); closeModal("dealModal"); currentView = "pipeline"; render(); showToast("Oportunidade salva no pipeline");
+    }
+
+    function applyProposalAutomation(deal, oldStage) { if (deal.stage === "Proposta enviada" && oldStage !== "Proposta enviada" && state.settings.autoProposalTask) ensureTask({ title: "Fazer follow-up da proposta", dueDate: addBusinessDays(2), relatedId: deal.id, notes: "Automação após proposta enviada", automation: `proposal:${deal.id}` }); }
+
+    function qualifyLead(id) { const lead = state.leads.find(item => item.id === id); if (!lead) return; openDealModal(null, "Diagnóstico", id); }
+    function moveDeal(id, stage) { const deal = state.deals.find(item => item.id === id); if (!deal || deal.stage === stage) return; const oldStage = deal.stage; deal.stage = stage; deal.updatedAt = new Date().toISOString(); if (stage === "Fechado") deal.closedAt = new Date().toISOString(); addActivity("deal", deal.id, `Oportunidade movida: ${oldStage} → ${stage}`); applyProposalAutomation(deal, oldStage); saveState(); render(); showToast(`Movida para ${stage}`); }
+
+    function saveTask(event) { event.preventDefault(); const data = Object.fromEntries(new FormData(event.target).entries()); data.done = data.done === "true"; const existing = state.tasks.find(task => task.id === data.id); if (existing) Object.assign(existing, data); else state.tasks.push({ ...data, id: uid("task"), createdAt: new Date().toISOString(), automation: "" }); saveState(); closeModal("taskModal"); render(); showToast("Tarefa salva"); }
+    function toggleTask(id) { const task = state.tasks.find(item => item.id === id); if (!task) return; task.done = !task.done; if (task.done) addActivity("task", task.relatedId, `Tarefa concluída: ${task.title}`); saveState(); render(); showToast(task.done ? "Tarefa concluída" : "Tarefa reaberta"); }
+
+    function saveContent(event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.target).entries());
+      data.pinned = data.pinned === "true";
+      const now = new Date().toISOString();
+      const existing = state.contentItems.find(item => item.id === data.id);
+      if (existing) Object.assign(existing, data, { updatedAt: now });
+      else state.contentItems.push({ ...data, id: uid("content"), pinnedWord: data.pinnedWord || "", source: "Planejamento manual", automation: "", createdAt: now, updatedAt: now });
+      saveState(); closeModal("contentModal"); currentView = "conteudo"; render(); showToast("Conteúdo salvo na operação editorial");
+    }
+
+    let pendingDelete = null;
+    function requestDelete(kind) { pendingDelete = kind; const labels = { lead: ["Excluir contato?", "O contato e suas tarefas relacionadas serão removidos."], deal: ["Excluir oportunidade?", "A oportunidade e suas tarefas relacionadas serão removidas."], task: ["Excluir tarefa?", "Esta tarefa será removida da agenda."], content: ["Excluir conteúdo?", "A pauta, o roteiro e o histórico deste conteúdo serão removidos."] }; const [title, text] = labels[kind]; document.querySelector("#confirmModalTitle").textContent = title; document.querySelector("#confirmModalText").textContent = text; openModal("confirmModal"); }
+    function deleteLead() { const id = document.querySelector("#leadForm").elements.id.value; if (!id) return; state.leads = state.leads.filter(lead => lead.id !== id); state.tasks = state.tasks.filter(task => task.relatedId !== id); state.messages = state.messages.filter(message => message.recordId !== id); saveState(); closeModal("leadModal"); render(); showToast("Contato excluído"); }
+    function deleteDeal() { const id = document.querySelector("#dealForm").elements.id.value; if (!id) return; state.deals = state.deals.filter(deal => deal.id !== id); state.tasks = state.tasks.filter(task => task.relatedId !== id); state.messages = state.messages.filter(message => message.recordId !== id); saveState(); closeModal("dealModal"); render(); showToast("Oportunidade excluída"); }
+    function deleteTask() { const id = document.querySelector("#taskForm").elements.id.value; if (!id) return; state.tasks = state.tasks.filter(task => task.id !== id); saveState(); closeModal("taskModal"); render(); showToast("Tarefa excluída"); }
+    function deleteContent() { const id = document.querySelector("#contentForm").elements.id.value; if (!id) return; state.contentItems = state.contentItems.filter(item => item.id !== id); saveState(); closeModal("contentModal"); render(); showToast("Conteúdo excluído"); }
+    function confirmDelete() { const kind = pendingDelete; pendingDelete = null; closeModal("confirmModal"); if (kind === "lead") deleteLead(); if (kind === "deal") deleteDeal(); if (kind === "task") deleteTask(); if (kind === "content") deleteContent(); }
+
+    function openRelated(id) { if (state.deals.some(item => item.id === id)) openDealModal(id); else if (state.leads.some(item => item.id === id)) openLeadModal(id); }
+    function normalizePhone(value) { const digits = String(value || "").replace(/\D/g, ""); return digits.startsWith("55") && digits.length >= 12 ? digits : `55${digits}`; }
+    function openWhatsApp(record) { if (!record || !record.whatsapp) { showToast("Cadastre um WhatsApp para este contato"); return; } const text = encodeURIComponent(messageTemplate(record)); window.open(`https://wa.me/${normalizePhone(record.whatsapp)}?text=${text}`, "_blank", "noopener"); }
+    function copyText(text) { if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => showToast("Mensagem copiada")).catch(() => fallbackCopy(text)); else fallbackCopy(text); }
+    function fallbackCopy(text) { const field = document.createElement("textarea"); field.value = text; document.body.appendChild(field); field.select(); document.execCommand("copy"); field.remove(); showToast("Mensagem copiada"); }
+
+    function runProspectingSearch(event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.target).entries());
+      prospectingQuery = { segment: data.segment.trim(), city: data.city.trim() };
+      render();
+    }
+
+    function readCezarForm() {
+      const form = document.querySelector("#cezarForm");
+      if (!form) return null;
+      const data = Object.fromEntries(new FormData(form).entries());
+      cezarDraft = { recordId: data.recordId, intent: data.intent, instruction: data.instruction.trim(), text: data.text.trim() };
+      return cezarDraft;
+    }
+    function regenerateCezarDraft() {
+      const draft = readCezarForm();
+      if (!draft) return;
+      draft.text = generateCezarMessage(relatedRecord(draft.recordId), draft.intent, draft.instruction);
+      render();
+      showToast("Nova sugestão preparada pelo Cezar");
+    }
+    function reviewCezarDraft(event) {
+      event.preventDefault();
+      const draft = readCezarForm();
+      const record = relatedRecord(draft?.recordId);
+      if (!record) return showToast("Selecione um contato cadastrado");
+      if (!record.whatsapp) return showToast("Cadastre o WhatsApp deste contato antes de continuar");
+      if (record.contactBasis === "Não contatar") return showToast("Este registro está marcado como Não contatar");
+      if (!draft.text) return showToast("Revise o texto antes de continuar");
+      const message = { id: uid("message"), recordId: record.id, intent: draft.intent, instruction: draft.instruction, text: draft.text, status: "Rascunho", createdAt: new Date().toISOString(), approvedAt: "", openedAt: "", sentAt: "" };
+      state.messages.push(message);
+      saveState();
+      openMessageApproval(message.id);
+    }
+    function openMessageApproval(id) {
+      const message = state.messages.find(item => item.id === id);
+      const record = relatedRecord(message?.recordId);
+      if (!message || !record) return showToast("Não foi possível localizar este contato");
+      if (!record.whatsapp) return showToast("Cadastre o WhatsApp deste contato antes de continuar");
+      pendingMessageId = id;
+      document.querySelector("#approvalContact").textContent = `${record.company} · ${record.whatsapp}`;
+      document.querySelector("#approvalIntent").textContent = message.intent;
+      document.querySelector("#approvalBasis").textContent = record.contactBasis || "Não definida";
+      document.querySelector("#approvalMessageText").value = message.text;
+      document.querySelector("#approvalPermission").checked = false;
+      document.querySelector("#approveMessageBtn").disabled = true;
+      openModal("messageApprovalModal");
+    }
+    function closeMessageApproval() {
+      pendingMessageId = null;
+      closeModal("messageApprovalModal");
+    }
+    function approveMessage() {
+      const message = state.messages.find(item => item.id === pendingMessageId);
+      const record = relatedRecord(message?.recordId);
+      const permission = document.querySelector("#approvalPermission").checked;
+      if (!message || !record) return closeMessageApproval();
+      if (!permission) return showToast("Confirme sua autorização antes de continuar");
+      if (record.contactBasis === "Não contatar") return showToast("Este registro está marcado como Não contatar");
+      message.text = document.querySelector("#approvalMessageText").value.trim();
+      if (!message.text) return showToast("A mensagem não pode ficar vazia");
+      const now = new Date().toISOString();
+      message.status = "Aberta no WhatsApp";
+      message.approvedAt = now;
+      message.openedAt = now;
+      addActivity("message", record.id, `Mensagem de ${message.intent.toLowerCase()} autorizada e aberta no WhatsApp`);
+      saveState();
+      window.open(`https://wa.me/${normalizePhone(record.whatsapp)}?text=${encodeURIComponent(message.text)}`, "_blank", "noopener");
+      closeMessageApproval();
+      render();
+      showToast("Autorização registrada; confirme o envio no WhatsApp");
+    }
+    function rejectMessage() {
+      const message = state.messages.find(item => item.id === pendingMessageId);
+      if (message) { message.status = "Rejeitada"; message.rejectedAt = new Date().toISOString(); saveState(); }
+      closeMessageApproval();
+      render();
+      showToast("Rascunho rejeitado");
+    }
+    function markMessageSent(id) {
+      const message = state.messages.find(item => item.id === id);
+      if (!message) return;
+      message.status = "Enviada";
+      message.sentAt = new Date().toISOString();
+      addActivity("message", message.recordId, `Mensagem de ${message.intent.toLowerCase()} marcada como enviada`);
+      saveState(); render(); showToast("Mensagem marcada como enviada");
+    }
+    function reuseMessage(id) {
+      const message = state.messages.find(item => item.id === id);
+      if (!message) return;
+      cezarDraft = { recordId: message.recordId, intent: message.intent, instruction: message.instruction || "", text: message.text };
+      currentView = "cezar";
+      render(); window.scrollTo(0, 0);
+    }
+    function prepareCezar(id) {
+      const record = relatedRecord(id);
+      if (!record) return;
+      const recommendation = cezarRecommendation(record);
+      cezarDraft = { recordId: record.id, intent: recommendation.intent, instruction: "", text: generateCezarMessage(record, recommendation.intent) };
+      currentView = "cezar";
+      render(); window.scrollTo(0, 0);
+    }
+
+    function backupJson() { downloadFile(`verta-crm-backup-${todayISO()}.json`, JSON.stringify(state, null, 2), "application/json"); }
+    function exportCsv() { const headers = ["tipo", "empresa", "contato", "whatsapp", "email", "origem", "interesse", "base_contato", "status", "etapa", "valor", "proxima_data", "proxima_acao", "notas"]; const rows = [...state.leads.map(lead => ({ tipo: "Lead", empresa: lead.company, contato: lead.contact, whatsapp: lead.whatsapp, email: lead.email, origem: lead.source, interesse: lead.interest, base_contato: lead.contactBasis, status: lead.status, etapa: "", valor: "", proxima_data: "", proxima_acao: "", notas: lead.notes })), ...state.deals.map(deal => ({ tipo: deal.stage === "Fechado" ? "Cliente" : "Oportunidade", empresa: deal.company, contato: deal.contact, whatsapp: deal.whatsapp, email: deal.email, origem: deal.source, interesse: deal.service, base_contato: deal.contactBasis, status: "", etapa: deal.stage, valor: deal.value, proxima_data: deal.nextDate, proxima_acao: deal.nextAction, notas: deal.notes }))]; const content = [headers.join(","), ...rows.map(row => headers.map(key => `"${String(row[key] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n"); downloadFile(`verta-crm-contatos-${todayISO()}.csv`, content, "text/csv;charset=utf-8"); }
+    function downloadFile(name, content, type) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = name; link.click(); URL.revokeObjectURL(url); }
+    function importJson(file) { const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported || (!Array.isArray(imported.deals) && !Array.isArray(imported.leads))) throw new Error("invalid"); state = normalizeState(imported); saveState(); render(); showToast("Backup importado e enviado para sincronização"); } catch (error) { alert("Não foi possível importar este arquivo de backup."); } }; reader.readAsText(file); }
+    function resetData() { if (!confirm("Tem certeza? Isso apaga contatos, oportunidades, tarefas, mensagens e conteúdos da sua conta em todos os dispositivos.")) return; state = baseState(); saveState(); render(); showToast("Base limpa e enviada para sincronização"); }
+
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+      const action = button.dataset.action;
+      if (action === "toggle-menu") document.querySelector("#sidebar").classList.toggle("open");
+      if (action === "toggle-auth-mode") setAuthMode(authMode === "login" ? "register" : "login");
+      if (action === "sync-now") syncNow();
+      if (action === "logout") logout();
+      if (action === "view") setView(button.dataset.view);
+      if (action === "new-lead") openLeadModal();
+      if (action === "new-prospect") openLeadModal(null, { source: "Google Maps", segment: prospectingQuery.segment, city: prospectingQuery.city, contactBasis: "Prospecção B2B avaliada" });
+      if (action === "clear-prospecting") { prospectingQuery = { segment: "", city: "" }; render(); }
+      if (action === "edit-lead") openLeadModal(button.dataset.id);
+      if (action === "qualify-lead") qualifyLead(button.dataset.id);
+      if (action === "cezar-record") prepareCezar(button.dataset.id);
+      if (action === "new-deal") openDealModal();
+      if (action === "new-deal-stage") openDealModal(null, button.dataset.stage);
+      if (action === "edit-deal") openDealModal(button.dataset.id);
+      if (action === "open-related") openRelated(button.dataset.id);
+      if (action === "new-task") openTaskModal();
+      if (action === "edit-task") openTaskModal(button.dataset.id);
+      if (action === "toggle-task") toggleTask(button.dataset.id);
+      if (action === "agenda-filter") { agendaFilter = button.dataset.filter; render(); }
+      if (action === "new-content") openContentModal();
+      if (action === "edit-content") openContentModal(button.dataset.id);
+      if (action === "prepare-content-cezar") prepareContentWithCezar(button.dataset.id);
+      if (action === "generate-content-form") generateContentAssetsForForm();
+      if (action === "create-content-week") createNextContentWeek();
+      if (action === "advance-content") advanceContentStatus(button.dataset.id);
+      if (action === "content-filter") { contentFilter = button.dataset.filter; render(); }
+      if (action === "close-lead-modal") closeModal("leadModal");
+      if (action === "close-deal-modal") closeModal("dealModal");
+      if (action === "close-task-modal") closeModal("taskModal");
+      if (action === "close-content-modal") closeModal("contentModal");
+      if (action === "delete-lead") requestDelete("lead");
+      if (action === "delete-deal") requestDelete("deal");
+      if (action === "delete-task") requestDelete("task");
+      if (action === "delete-content") requestDelete("content");
+      if (action === "close-confirm-modal") { pendingDelete = null; closeModal("confirmModal"); }
+      if (action === "confirm-delete") confirmDelete();
+      if (action === "close-message-approval") closeMessageApproval();
+      if (action === "approve-message") approveMessage();
+      if (action === "reject-message") rejectMessage();
+      if (action === "review-message") openMessageApproval(button.dataset.id);
+      if (action === "mark-message-sent") markMessageSent(button.dataset.id);
+      if (action === "reuse-message") reuseMessage(button.dataset.id);
+      if (action === "generate-cezar") regenerateCezarDraft();
+      if (action === "copy-cezar") { readCezarForm(); copyText(cezarDraft.text || ""); }
+      if (action === "material-tab") { materialTab = button.dataset.tab; render(); }
+      if (action === "backup") backupJson();
+      if (action === "export-csv") exportCsv();
+      if (action === "import") document.querySelector("#importInput").click();
+      if (action === "reset") resetData();
+    });
+
+    document.addEventListener("submit", event => {
+      const formId = event.target.getAttribute("id");
+      if (formId === "authForm") handleAuthSubmit(event);
+      if (formId === "leadForm") saveLead(event);
+      if (formId === "dealForm") saveDeal(event);
+      if (formId === "taskForm") saveTask(event);
+      if (formId === "contentForm") saveContent(event);
+      if (formId === "quickLeadForm") saveQuickLead(event);
+      if (formId === "prospectingSearchForm") runProspectingSearch(event);
+      if (formId === "cezarForm") reviewCezarDraft(event);
+    });
+    document.addEventListener("change", event => {
+      if (event.target.matches("[data-setting]")) { state.settings[event.target.dataset.setting] = event.target.checked; saveState(); showToast("Automação atualizada"); }
+      if (event.target.id === "approvalPermission") document.querySelector("#approveMessageBtn").disabled = !event.target.checked;
+    });
+    document.addEventListener("dragstart", event => { const card = event.target.closest("[data-deal-id]"); if (card) event.dataTransfer.setData("text/plain", card.dataset.dealId); });
+    document.addEventListener("dragover", event => { if (event.target.closest("[data-drop-stage]")) event.preventDefault(); });
+    document.addEventListener("drop", event => { const zone = event.target.closest("[data-drop-stage]"); if (!zone) return; event.preventDefault(); moveDeal(event.dataTransfer.getData("text/plain"), zone.dataset.dropStage); });
+    document.querySelector("#importInput").addEventListener("change", event => { const file = event.target.files[0]; if (file) importJson(file); event.target.value = ""; });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeAllModals(); });
+
+    render();
+    showAuthShell();
+    initCloud();
+  </script>
+</body>
+</html>
