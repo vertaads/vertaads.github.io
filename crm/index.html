@@ -362,6 +362,9 @@
     .auth-copy h1 { margin: 0; color: var(--white); font-size: 24px; line-height: 1.25; }
     .auth-copy p { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
     .auth-form { display: grid; gap: 14px; }
+    .auth-register-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .auth-register-fields[hidden] { display: none; }
+    .auth-register-fields .full { grid-column: 1 / -1; }
     .auth-form .btn { width: 100%; min-height: 43px; }
     .auth-secondary { width: 100%; margin-top: 9px; border: 0; color: var(--muted); background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
     .auth-secondary:hover { color: var(--white); }
@@ -375,6 +378,20 @@
     .sync-chip[data-tone="syncing"]::before { background: #e8bf63; }
     .sync-chip[data-tone="error"]::before { background: #e86666; }
     .sync-chip:hover { color: var(--white); border-color: #3b4b40; }
+    .team-list { display: grid; gap: 9px; }
+    .team-member { display: grid; grid-template-columns: minmax(190px, 1.25fr) minmax(150px, .8fr) minmax(130px, .7fr) auto; gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .team-member h3 { margin: 0; color: var(--white); font-size: 13px; line-height: 1.4; }
+    .team-member p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .team-member .field label { font-size: 9px; }
+    .team-member .field input, .team-member .field select { min-height: 36px; padding: 8px 10px; font-size: 11px; }
+    .team-member.owner { border-left: 3px solid var(--green); }
+    .invite-result { display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #315f3f; border-radius: 6px; background: #0c1710; }
+    .invite-result code { display: block; overflow-wrap: anywhere; color: var(--green-2); font-size: 11px; line-height: 1.5; }
+    .permission-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .permission-item { padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .permission-item b { color: var(--white); font-size: 11px; }
+    .permission-item p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .read-only-note { margin-bottom: 12px; }
 
     @media (max-width: 1120px) {
       .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -387,10 +404,13 @@
       .pinned-grid { grid-template-columns: 1fr; }
       .lead-card { grid-template-columns: minmax(0, 1fr) minmax(130px, .6fr) auto; }
       .lead-card .lead-extra { display: none; }
+      .permission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .team-member { grid-template-columns: minmax(180px, 1fr) minmax(130px, .7fr); }
+      .team-member .item-actions { justify-content: flex-start; }
     }
     @media (max-width: 840px) {
       .app { grid-template-columns: 1fr; }
-      .sidebar { position: fixed; z-index: 40; width: 268px; height: 100vh; transform: translateX(-105%); transition: transform .18s ease; }
+      .sidebar { position: fixed; z-index: 40; width: 268px; height: 100vh; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-105%); transition: transform .18s ease; }
       .sidebar.open { transform: translateX(0); }
       .mobile-bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 10px 13px; border-bottom: 1px solid var(--line); background: #080b09; }
       .mobile-brand { display: flex; align-items: center; justify-content: center; }
@@ -423,6 +443,7 @@
       .pinned-cover { width: 88px; }
       .content-row { grid-template-columns: 1fr; }
       .content-row .item-actions { justify-content: flex-start; }
+      .auth-register-fields, .permission-grid, .team-member { grid-template-columns: 1fr; }
       .top-actions { width: 100%; }
       .top-actions .btn { flex: 1; }
       .section-head { flex-direction: column; }
@@ -450,11 +471,16 @@
         <p id="authSubtitle">Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.</p>
       </div>
       <form class="auth-form" id="authForm">
+        <div class="auth-register-fields" id="authRegisterFields" hidden>
+          <div class="field"><label for="authFirstName">Nome</label><input id="authFirstName" name="firstName" autocomplete="given-name" placeholder="Seu nome"></div>
+          <div class="field"><label for="authLastName">Sobrenome</label><input id="authLastName" name="lastName" autocomplete="family-name" placeholder="Seu sobrenome"></div>
+          <div class="field full"><label for="authPhone">Telefone <span class="muted">(opcional)</span></label><input id="authPhone" name="phone" type="tel" autocomplete="tel" placeholder="(00) 00000-0000"></div>
+        </div>
         <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" name="email" type="email" autocomplete="username" required placeholder="seuemail@exemplo.com"></div>
         <div class="field"><label for="authPassword">Senha</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="No mínimo 8 caracteres"></div>
         <button class="btn primary" id="authSubmit" type="submit">Entrar</button>
       </form>
-      <button class="auth-secondary" type="button" data-action="toggle-auth-mode" id="authToggle">Primeiro acesso? Criar conta</button>
+      <button class="auth-secondary" type="button" data-action="toggle-auth-mode" id="authToggle" hidden>Recebeu um convite? Criar conta</button>
       <button class="auth-secondary" type="button" data-action="backup">Baixar cópia dos dados deste navegador</button>
       <div class="auth-status" id="authStatus" role="status"></div>
       <div class="auth-migration" id="authMigration">Os dados deste navegador serão preservados e enviados para sua conta no primeiro acesso.</div>
@@ -737,6 +763,7 @@
       automacoes: ["Processos", "Automações", "Rotinas simples para manter a operação em movimento sem depender da memória."],
       conteudo: ["Marca e aquisição", "Operação de conteúdo", "Planeje a semana, prepare roteiros com o Cezar e acompanhe cada publicação da VERTA."],
       materiais: ["Base interna", "Material de trabalho", "Método VERTA, serviços, funil, abordagens e referências para consultar durante a operação."],
+      equipe: ["Pessoas e segurança", "Equipe e acessos", "Convide funcionários, defina responsabilidades e acompanhe quem pode entrar no CRM."],
       config: ["Dados", "Configurações", "Faça backup da base e mantenha seus registros sob controle."]
     };
     const navGroups = [
@@ -745,9 +772,11 @@
       ["Aquisição", ["prospectar"]],
       ["Assistência", ["cezar", "automacoes"]],
       ["VERTA", ["conteudo", "materiais"]],
-      ["Sistema", ["config"]]
+      ["Sistema", ["equipe", "config"]]
     ];
-    const navLabels = { dashboard: "Visão geral", leads: "Caixa de entrada", pipeline: "Pipeline", agenda: "Agenda", contatos: "Contatos", clientes: "Clientes", prospectar: "Pesquisa de clientes", cezar: "Cezar", automacoes: "Automações", conteudo: "Operação de conteúdo", materiais: "Material de trabalho", config: "Configurações" };
+    const navLabels = { dashboard: "Visão geral", leads: "Caixa de entrada", pipeline: "Pipeline", agenda: "Agenda", contatos: "Contatos", clientes: "Clientes", prospectar: "Pesquisa de clientes", cezar: "Cezar", automacoes: "Automações", conteudo: "Operação de conteúdo", materiais: "Material de trabalho", equipe: "Equipe e acessos", config: "Configurações" };
+    const roleLabels = { owner: "Proprietário", admin: "Administrador", commercial: "Comercial", operations: "Operação", viewer: "Somente leitura" };
+    const editableRoles = ["owner", "admin", "commercial", "operations"];
 
     let state = loadState();
     let currentView = "dashboard";
@@ -765,6 +794,14 @@
     let supabaseClient = null;
     let authUser = null;
     let authMode = "login";
+    let inviteToken = new URLSearchParams(window.location.search).get("invite") || localStorage.getItem("verta_crm_invite") || "";
+    let invitePreview = null;
+    let workspaceContext = null;
+    let activeWorkspace = null;
+    let activeMembership = null;
+    let teamMembers = [];
+    let workspaceInvites = [];
+    let lastInviteLink = "";
     let cloudReady = false;
     let cloudSaveTimer = null;
     let cloudPersisting = false;
@@ -802,8 +839,11 @@
       };
     }
 
+    function stateStorageKey() { return activeWorkspace?.id ? `${STORAGE_KEY}_${activeWorkspace.id}` : STORAGE_KEY; }
+    function syncMetaStorageKey() { return activeWorkspace?.id ? `${SYNC_META_KEY}_${activeWorkspace.id}` : SYNC_META_KEY; }
+
     function loadState() {
-      try { return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null")); }
+      try { return normalizeState(JSON.parse(localStorage.getItem(stateStorageKey()) || "null")); }
       catch (error) { return baseState(); }
     }
 
@@ -813,18 +853,19 @@
     }
 
     function loadSyncMeta() {
-      try { return JSON.parse(localStorage.getItem(SYNC_META_KEY) || "null") || { dirty: false, savedAt: "" }; }
+      try { return JSON.parse(localStorage.getItem(syncMetaStorageKey()) || "null") || { dirty: false, savedAt: "" }; }
       catch (error) { return { dirty: false, savedAt: "" }; }
     }
 
-    function writeSyncMeta(meta) { localStorage.setItem(SYNC_META_KEY, JSON.stringify({ ...loadSyncMeta(), ...meta })); }
+    function writeSyncMeta(meta) { localStorage.setItem(syncMetaStorageKey(), JSON.stringify({ ...loadSyncMeta(), ...meta })); }
 
     function saveLocalSnapshot(markDirty = false) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(stateStorageKey(), JSON.stringify(state));
       if (markDirty) writeSyncMeta({ dirty: true, changedAt: new Date().toISOString() });
     }
 
     function saveState() {
+      if (!canEditWorkspace()) return showToast("Sua permissão permite apenas visualizar o CRM");
       localRevision += 1;
       saveLocalSnapshot(true);
       if (cloudReady && authUser) scheduleCloudSave();
@@ -845,6 +886,10 @@
     }
 
     function updateMigrationNotice() {
+      if (inviteToken && invitePreview) {
+        document.querySelector("#authMigration").textContent = `Convite para ${roleLabel(invitePreview.role)}${invitePreview.job_title ? ` · ${invitePreview.job_title}` : ""}. Use exatamente o e-mail informado.`;
+        return;
+      }
       const count = state.leads.length + state.deals.length;
       const element = document.querySelector("#authMigration");
       if (count === 1) element.textContent = "1 registro comercial deste navegador será preservado e enviado para sua conta.";
@@ -853,14 +898,83 @@
     }
 
     function setAuthMode(mode) {
-      authMode = mode;
-      const register = mode === "register";
-      document.querySelector("#authTitle").textContent = register ? "Criar primeiro acesso" : "Entrar no CRM";
-      document.querySelector("#authSubtitle").textContent = register ? "Crie a conta que será a proprietária dos dados da VERTA." : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.";
+      authMode = mode === "register" && inviteToken ? "register" : "login";
+      const register = authMode === "register";
+      document.querySelector("#authTitle").textContent = register ? "Aceitar convite" : "Entrar no CRM";
+      document.querySelector("#authSubtitle").textContent = register ? `Crie sua conta para entrar na ${invitePreview?.workspace_name || "VERTA"}.` : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.";
       document.querySelector("#authSubmit").textContent = register ? "Criar conta" : "Entrar";
-      document.querySelector("#authToggle").textContent = register ? "Já tem uma conta? Entrar" : "Primeiro acesso? Criar conta";
+      document.querySelector("#authToggle").hidden = !inviteToken;
+      document.querySelector("#authToggle").textContent = register ? "Já tem uma conta? Entrar" : "Recebeu um convite? Criar conta";
+      document.querySelector("#authRegisterFields").hidden = !register;
+      document.querySelector("#authFirstName").required = register;
+      document.querySelector("#authLastName").required = register;
       document.querySelector("#authPassword").autocomplete = register ? "new-password" : "current-password";
+      if (invitePreview?.email) {
+        document.querySelector("#authEmail").value = invitePreview.email;
+        document.querySelector("#authEmail").readOnly = true;
+      } else document.querySelector("#authEmail").readOnly = false;
       setAuthStatus();
+    }
+
+    function canManageTeam() { return ["owner", "admin"].includes(activeMembership?.role); }
+    function canEditWorkspace() { return editableRoles.includes(activeMembership?.role); }
+    function roleLabel(role) { return roleLabels[role] || role || "Sem permissão"; }
+
+    async function loadInvitePreview() {
+      if (!inviteToken || !supabaseClient) return;
+      localStorage.setItem("verta_crm_invite", inviteToken);
+      const { data, error } = await supabaseClient.rpc("get_invite_preview", { p_token: inviteToken });
+      if (error) {
+        inviteToken = "";
+        invitePreview = null;
+        localStorage.removeItem("verta_crm_invite");
+        setAuthMode(inviteToken ? "register" : "login");
+        setAuthStatus("Este convite não é válido ou já expirou.", "error");
+        return;
+      }
+      invitePreview = data;
+      setAuthMode("register");
+      document.querySelector("#authMigration").textContent = `Convite para ${roleLabel(data.role)}${data.job_title ? ` · ${data.job_title}` : ""}. Use exatamente o e-mail informado.`;
+    }
+
+    function clearInviteFromBrowser() {
+      inviteToken = "";
+      invitePreview = null;
+      localStorage.removeItem("verta_crm_invite");
+      if (window.history?.replaceState) window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    async function loadWorkspaceContext() {
+      if (!supabaseClient || !authUser) throw new Error("Conta não autenticada");
+      if (inviteToken) {
+        const { error: claimError } = await supabaseClient.rpc("claim_workspace_invite", { p_token: inviteToken });
+        if (claimError) throw claimError;
+        clearInviteFromBrowser();
+      }
+      await supabaseClient.rpc("touch_workspace_presence");
+      const { data, error } = await supabaseClient.rpc("get_workspace_context");
+      if (error) throw error;
+      workspaceContext = data;
+      activeWorkspace = data?.workspace || null;
+      activeMembership = data?.membership || null;
+      teamMembers = Array.isArray(data?.members) ? data.members : [];
+      workspaceInvites = Array.isArray(data?.invites) ? data.invites : [];
+
+      const workspaceKey = stateStorageKey();
+      const workspaceLocal = localStorage.getItem(workspaceKey);
+      if (workspaceLocal) state = normalizeState(JSON.parse(workspaceLocal));
+      else if (activeMembership?.role !== "owner") state = baseState();
+    }
+
+    async function refreshWorkspaceContext(renderAfter = true) {
+      const { data, error } = await supabaseClient.rpc("get_workspace_context");
+      if (error) throw error;
+      workspaceContext = data;
+      activeWorkspace = data?.workspace || activeWorkspace;
+      activeMembership = data?.membership || activeMembership;
+      teamMembers = Array.isArray(data?.members) ? data.members : [];
+      workspaceInvites = Array.isArray(data?.invites) ? data.invites : [];
+      if (renderAfter) render();
     }
 
     function showAuthShell() {
@@ -873,6 +987,7 @@
     function showCrmApp() {
       document.querySelector("#authShell").hidden = true;
       document.querySelector("#crmApp").hidden = false;
+      document.querySelector("#crmApp").classList.toggle("read-only", !canEditWorkspace());
       document.querySelector("#mobileBar").hidden = false;
       render();
       setCloudStatus(cloudStatus.tone, cloudStatus.text);
@@ -883,19 +998,20 @@
     async function upsertCloudSnapshot(snapshot) {
       const { error } = await supabaseClient.from("crm_states").upsert({
         user_id: authUser.id,
+        workspace_id: activeWorkspace.id,
         data: snapshot,
         updated_at: new Date().toISOString()
-      }, { onConflict: "user_id" });
+      }, { onConflict: "workspace_id" });
       if (error) throw error;
     }
 
     async function hydrateCloudState() {
-      if (!supabaseClient || !authUser) return;
+      if (!supabaseClient || !authUser || !activeWorkspace) return;
       setCloudStatus("syncing", "Carregando dados");
       const { data: row, error } = await supabaseClient
         .from("crm_states")
         .select("data, updated_at")
-        .eq("user_id", authUser.id)
+        .eq("workspace_id", activeWorkspace.id)
         .maybeSingle();
       if (error) throw error;
 
@@ -959,9 +1075,14 @@
       const userId = session?.user?.id || "";
       if (!userId) {
         authUser = null;
+        workspaceContext = null;
+        activeWorkspace = null;
+        activeMembership = null;
+        teamMembers = [];
+        workspaceInvites = [];
         activeSessionUserId = "";
         cloudReady = false;
-        setAuthMode("login");
+        setAuthMode(inviteToken ? "register" : "login");
         showAuthShell();
         return;
       }
@@ -972,13 +1093,17 @@
       authUser = session.user;
       setAuthStatus("Carregando seus dados...", "success");
       try {
+        await loadWorkspaceContext();
         await hydrateCloudState();
         showCrmApp();
       } catch (error) {
         cloudReady = false;
-        setCloudStatus("error", "Configurar banco");
-        showCrmApp();
-        showToast("CRM aberto em modo local. Falta executar o schema.sql no Supabase.");
+        setCloudStatus("error", "Acesso pendente");
+        showAuthShell();
+        const accessMessage = error?.message?.includes("sem acesso") || error?.message?.includes("outra empresa")
+          ? error.message
+          : "A estrutura de equipe ainda precisa ser ativada no Supabase.";
+        setAuthStatus(accessMessage, "error");
         console.error("VERTA CRM cloud load:", error);
       } finally {
         sessionLoadingUserId = "";
@@ -995,7 +1120,16 @@
       setAuthStatus(authMode === "register" ? "Criando sua conta..." : "Validando acesso...");
       try {
         if (authMode === "register") {
-          const { data: result, error } = await supabaseClient.auth.signUp({ email: data.email.trim(), password: data.password });
+          if (!inviteToken) throw new Error("É necessário receber um convite da VERTA para criar a conta.");
+          const redirectUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(inviteToken)}`;
+          const { data: result, error } = await supabaseClient.auth.signUp({
+            email: data.email.trim(),
+            password: data.password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: { first_name: data.firstName.trim(), last_name: data.lastName.trim(), phone: data.phone.trim() }
+            }
+          });
           if (error) throw error;
           if (!result.session) setAuthStatus("Conta criada. Confirme o e-mail recebido e depois entre no CRM.", "success");
           else setAuthStatus("Conta criada. Preparando seus dados...", "success");
@@ -1028,6 +1162,7 @@
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
+      await loadInvitePreview();
       supabaseClient.auth.onAuthStateChange((_event, session) => setTimeout(() => applySession(session), 0));
       const { data, error } = await supabaseClient.auth.getSession();
       if (error) return setAuthStatus(error.message, "error");
@@ -1471,9 +1606,48 @@
 
     function switchControl(key, checked) { return `<label class="switch" title="Ativar ou desativar"><input type="checkbox" data-setting="${key}" ${checked ? "checked" : ""}><span></span></label>`; }
 
+    function roleOptions(selected) {
+      return ["admin", "commercial", "operations", "viewer"].map(role => `<option value="${role}" ${selected === role ? "selected" : ""}>${roleLabel(role)}</option>`).join("");
+    }
+
+    function inviteLink(token) {
+      const base = `${window.location.origin}${window.location.pathname}`;
+      return `${base}?invite=${encodeURIComponent(token)}`;
+    }
+
+    function memberName(member) {
+      return [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+    }
+
+    function renderTeamMember(member) {
+      const lastSeen = member.last_seen_at ? formatDateTime(member.last_seen_at) : "Ainda não acessou";
+      if (member.role === "owner") return `<article class="team-member owner"><div><h3>${escapeHtml(memberName(member))} <span class="tag green">Proprietário</span></h3><p>${escapeHtml(member.email)}${member.phone ? ` · ${escapeHtml(member.phone)}` : ""}</p></div><div><p class="item-title">${escapeHtml(member.job_title || "Direção")}</p><p>Controle total da empresa</p></div><div><p class="item-title">Último acesso</p><p>${escapeHtml(lastSeen)}</p></div><div>${member.is_current_user ? `<span class="tag">Sua conta</span>` : ""}</div></article>`;
+
+      const controls = canManageTeam() ? `<form class="team-member" data-member-form data-user-id="${member.user_id}"><div><h3>${escapeHtml(memberName(member))}${member.is_current_user ? ` <span class="tag">Sua conta</span>` : ""}</h3><p>${escapeHtml(member.email)}${member.phone ? ` · ${escapeHtml(member.phone)}` : ""}<br>Último acesso: ${escapeHtml(lastSeen)}</p></div><div class="field"><label>Cargo</label><input name="jobTitle" value="${escapeHtml(member.job_title || "")}" placeholder="Ex.: Comercial"></div><div class="field"><label>Permissão</label><select name="role">${roleOptions(member.role)}</select></div><div class="item-actions"><select name="status" aria-label="Status"><option value="active" ${member.status === "active" ? "selected" : ""}>Ativo</option><option value="disabled" ${member.status === "disabled" ? "selected" : ""}>Bloqueado</option></select><button class="btn small" type="submit">Salvar</button></div></form>` : `<article class="team-member"><div><h3>${escapeHtml(memberName(member))}</h3><p>${escapeHtml(member.email)}</p></div><div><p class="item-title">${escapeHtml(member.job_title || "Sem cargo informado")}</p><p>${roleLabel(member.role)}</p></div><div><p class="item-title">${member.status === "active" ? "Ativo" : "Bloqueado"}</p><p>Último acesso: ${escapeHtml(lastSeen)}</p></div><div></div></article>`;
+      return controls;
+    }
+
+    function renderPendingInvite(invite) {
+      const link = inviteLink(invite.token);
+      return `<article class="list-item"><div><p class="item-title">${escapeHtml(invite.email)}</p><p class="item-meta">${roleLabel(invite.role)}${invite.job_title ? ` · ${escapeHtml(invite.job_title)}` : ""} · expira em ${escapeHtml(formatDateTime(invite.expires_at))}</p></div><div class="item-actions"><button class="btn small" type="button" data-action="copy-invite" data-link="${escapeHtml(link)}">Copiar link</button><button class="btn small danger" type="button" data-action="revoke-invite" data-id="${invite.id}">Cancelar</button></div></article>`;
+    }
+
+    function renderTeam() {
+      const role = activeMembership?.role || "viewer";
+      const activeCount = teamMembers.filter(member => member.status === "active").length;
+      return `<div class="grid">
+        <section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Empresa compartilhada</p><h2>${escapeHtml(activeWorkspace?.name || "VERTA")}</h2><p>${activeCount} acesso(s) ativo(s) · sua permissão: ${roleLabel(role)}</p></div>${canManageTeam() ? `<span class="tag green">Você gerencia a equipe</span>` : `<span class="tag">Acesso individual</span>`}</div>
+          <div class="permission-grid"><div class="permission-item"><b>Proprietário</b><p>Controla dados, equipe e segurança.</p></div><div class="permission-item"><b>Administrador</b><p>Gerencia a operação e os acessos.</p></div><div class="permission-item"><b>Comercial e operação</b><p>Trabalham nos registros compartilhados.</p></div><div class="permission-item"><b>Somente leitura</b><p>Consulta informações sem alterar a base.</p></div></div>
+        </section>
+        ${!canEditWorkspace() ? `<div class="notice read-only-note"><b>Modo de leitura:</b> sua conta pode consultar o CRM, mas não pode alterar registros.</div>` : ""}
+        ${canManageTeam() ? `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Novo acesso</p><h2>Convidar funcionário</h2><p>Gere um link individual. A pessoa cria a própria senha e entra na mesma base da VERTA.</p></div></div><form class="form-grid" id="teamInviteForm"><div class="field full"><label>E-mail</label><input name="email" type="email" required placeholder="nome@exemplo.com"></div><div class="field"><label>Cargo</label><input name="jobTitle" placeholder="Ex.: Atendimento comercial"></div><div class="field"><label>Permissão</label><select name="role">${roleOptions("commercial")}</select></div><div class="full"><button class="btn primary" type="submit">Gerar convite</button></div></form>${lastInviteLink ? `<div class="invite-result"><b>Convite pronto</b><code>${escapeHtml(lastInviteLink)}</code><button class="btn small" type="button" data-action="copy-invite" data-link="${escapeHtml(lastInviteLink)}">Copiar link</button></div>` : ""}</section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Aguardando cadastro</p><h2>Convites pendentes</h2><p>Convites expiram automaticamente em sete dias.</p></div><span class="tag">${workspaceInvites.length}</span></div><div class="list">${workspaceInvites.length ? workspaceInvites.map(renderPendingInvite).join("") : `<div class="empty"><strong>Nenhum convite pendente</strong>Os próximos convites aparecerão aqui.</div>`}</div></section></div>` : ""}
+        <section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Contas autorizadas</p><h2>Funcionários e acessos</h2><p>As senhas nunca ficam visíveis no CRM. Cada pessoa controla a própria senha.</p></div><span class="tag">${teamMembers.length}</span></div><div class="team-list">${teamMembers.map(renderTeamMember).join("")}</div></section>
+      </div>`;
+    }
+
     function renderConfig() {
       const accountEmail = authUser?.email || "Conta não identificada";
-      return `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Conta e sincronização</p><h2>Dados protegidos na nuvem</h2><p>${escapeHtml(accountEmail)} · <span id="configCloudStatus">${escapeHtml(cloudStatus.text)}</span></p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="sync-now">Sincronizar agora</button><button class="btn" type="button" data-action="logout">Sair da conta</button></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Portabilidade</p><h2>Backup independente</h2><p>A nuvem salva automaticamente. O JSON continua disponível como cópia adicional sob seu controle.</p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="backup">Baixar backup JSON</button><button class="btn" type="button" data-action="import">Importar backup</button><button class="btn" type="button" data-action="export-csv">Exportar contatos em CSV</button></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Manutenção</p><h2>Limpar todos os dados</h2><p>Esta ação limpa a base da sua conta e sincroniza a alteração com os outros dispositivos.</p></div></div><button class="btn danger" type="button" data-action="reset">Limpar base da conta</button></section></div>`;
+      return `<div class="grid two-col"><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Conta e sincronização</p><h2>Dados protegidos na nuvem</h2><p>${escapeHtml(accountEmail)} · ${roleLabel(activeMembership?.role)} · <span id="configCloudStatus">${escapeHtml(cloudStatus.text)}</span></p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="sync-now">Sincronizar agora</button><button class="btn" type="button" data-action="logout">Sair da conta</button></div></section><section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Portabilidade</p><h2>Backup independente</h2><p>A nuvem salva automaticamente. O JSON continua disponível como cópia adicional sob seu controle.</p></div></div><div class="button-row"><button class="btn primary" type="button" data-action="backup">Baixar backup JSON</button><button class="btn" type="button" data-action="import">Importar backup</button><button class="btn" type="button" data-action="export-csv">Exportar contatos em CSV</button></div></section>${canManageTeam() ? `<section class="card card-pad"><div class="section-head"><div><p class="section-kicker">Manutenção</p><h2>Limpar todos os dados</h2><p>Esta ação limpa a base compartilhada da VERTA em todos os dispositivos.</p></div></div><button class="btn danger" type="button" data-action="reset">Limpar base da empresa</button></section>` : ""}</div>`;
     }
 
     function render() {
@@ -1483,7 +1657,7 @@
       document.querySelector("#viewSubtitle").textContent = subtitle;
       renderNav();
       const appView = document.querySelector("#appView");
-      const renders = { dashboard: renderDashboard, leads: renderLeads, pipeline: renderPipeline, agenda: renderAgenda, contatos: renderContacts, clientes: renderClients, prospectar: renderProspecting, cezar: renderCezar, automacoes: renderAutomations, conteudo: renderContent, materiais: renderMaterials, config: renderConfig };
+      const renders = { dashboard: renderDashboard, leads: renderLeads, pipeline: renderPipeline, agenda: renderAgenda, contatos: renderContacts, clientes: renderClients, prospectar: renderProspecting, cezar: renderCezar, automacoes: renderAutomations, conteudo: renderContent, materiais: renderMaterials, equipe: renderTeam, config: renderConfig };
       appView.innerHTML = renders[currentView]();
       const leadFilterSelect = document.querySelector("#leadFilter");
       if (leadFilterSelect) leadFilterSelect.value = leadFilter;
@@ -1905,10 +2079,58 @@
     function importJson(file) { const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported || (!Array.isArray(imported.deals) && !Array.isArray(imported.leads))) throw new Error("invalid"); state = normalizeState(imported); saveState(); render(); showToast("Backup importado e enviado para sincronização"); } catch (error) { alert("Não foi possível importar este arquivo de backup."); } }; reader.readAsText(file); }
     function resetData() { if (!confirm("Tem certeza? Isso apaga contatos, oportunidades, tarefas, mensagens e conteúdos da sua conta em todos os dispositivos.")) return; state = baseState(); saveState(); render(); showToast("Base limpa e enviada para sincronização"); }
 
+    async function createTeamInvite(event) {
+      event.preventDefault();
+      if (!canManageTeam()) return showToast("Somente proprietários e administradores podem convidar pessoas");
+      const form = event.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const submit = form.querySelector("button[type='submit']");
+      submit.disabled = true;
+      try {
+        const { data: invite, error } = await supabaseClient.rpc("create_workspace_invite", { p_email: data.email.trim(), p_role: data.role, p_job_title: data.jobTitle.trim() });
+        if (error) throw error;
+        lastInviteLink = inviteLink(invite.token);
+        form.reset();
+        await refreshWorkspaceContext(false);
+        render();
+        showToast("Convite criado. Copie o link e envie para a pessoa");
+      } catch (error) {
+        showToast(error?.message || "Não foi possível criar o convite");
+      } finally { submit.disabled = false; }
+    }
+
+    async function updateTeamMember(event) {
+      event.preventDefault();
+      if (!canManageTeam()) return showToast("Você não tem permissão para alterar a equipe");
+      const form = event.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const submit = form.querySelector("button[type='submit']");
+      submit.disabled = true;
+      try {
+        const { error } = await supabaseClient.rpc("update_workspace_member", { p_user_id: form.dataset.userId, p_role: data.role, p_job_title: data.jobTitle.trim(), p_status: data.status });
+        if (error) throw error;
+        await refreshWorkspaceContext();
+        showToast("Acesso atualizado");
+      } catch (error) {
+        showToast(error?.message || "Não foi possível atualizar o acesso");
+      } finally { submit.disabled = false; }
+    }
+
+    async function revokeTeamInvite(id) {
+      if (!canManageTeam()) return;
+      const { error } = await supabaseClient.rpc("revoke_workspace_invite", { p_invite_id: id });
+      if (error) return showToast(error.message || "Não foi possível cancelar o convite");
+      await refreshWorkspaceContext();
+      showToast("Convite cancelado");
+    }
+
+    const editActions = new Set(["new-lead", "new-prospect", "edit-lead", "qualify-lead", "cezar-record", "new-deal", "new-deal-stage", "edit-deal", "new-task", "edit-task", "toggle-task", "new-content", "edit-content", "prepare-content-cezar", "generate-content-form", "create-content-week", "advance-content", "delete-lead", "delete-deal", "delete-task", "delete-content", "confirm-delete", "approve-message", "reject-message", "review-message", "mark-message-sent", "reuse-message", "generate-cezar", "reset", "import"]);
+
     document.addEventListener("click", event => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
       const action = button.dataset.action;
+      if (!canEditWorkspace() && editActions.has(action)) return showToast("Sua permissão permite apenas visualizar o CRM");
       if (action === "toggle-menu") document.querySelector("#sidebar").classList.toggle("open");
       if (action === "toggle-auth-mode") setAuthMode(authMode === "login" ? "register" : "login");
       if (action === "sync-now") syncNow();
@@ -1954,6 +2176,8 @@
       if (action === "generate-cezar") void regenerateCezarDraft();
       if (action === "copy-cezar") { readCezarForm(); copyText(cezarDraft.text || ""); }
       if (action === "material-tab") { materialTab = button.dataset.tab; render(); }
+      if (action === "copy-invite") copyText(button.dataset.link || "");
+      if (action === "revoke-invite") void revokeTeamInvite(button.dataset.id);
       if (action === "backup") backupJson();
       if (action === "export-csv") exportCsv();
       if (action === "import") document.querySelector("#importInput").click();
@@ -1963,6 +2187,9 @@
     document.addEventListener("submit", event => {
       const formId = event.target.getAttribute("id");
       if (formId === "authForm") handleAuthSubmit(event);
+      if (formId === "teamInviteForm") void createTeamInvite(event);
+      if (event.target.matches("[data-member-form]")) void updateTeamMember(event);
+      if (!["authForm", "teamInviteForm"].includes(formId) && !event.target.matches("[data-member-form]") && !canEditWorkspace()) { event.preventDefault(); return showToast("Sua permissão permite apenas visualizar o CRM"); }
       if (formId === "leadForm") saveLead(event);
       if (formId === "dealForm") saveDeal(event);
       if (formId === "taskForm") saveTask(event);
@@ -1972,12 +2199,12 @@
       if (formId === "cezarForm") reviewCezarDraft(event);
     });
     document.addEventListener("change", event => {
-      if (event.target.matches("[data-setting]")) { state.settings[event.target.dataset.setting] = event.target.checked; saveState(); showToast("Automação atualizada"); }
+      if (event.target.matches("[data-setting]")) { if (!canEditWorkspace()) { event.target.checked = !event.target.checked; return showToast("Sua permissão permite apenas visualizar o CRM"); } state.settings[event.target.dataset.setting] = event.target.checked; saveState(); showToast("Automação atualizada"); }
       if (event.target.id === "approvalPermission") document.querySelector("#approveMessageBtn").disabled = !event.target.checked;
     });
     document.addEventListener("dragstart", event => { const card = event.target.closest("[data-deal-id]"); if (card) event.dataTransfer.setData("text/plain", card.dataset.dealId); });
     document.addEventListener("dragover", event => { if (event.target.closest("[data-drop-stage]")) event.preventDefault(); });
-    document.addEventListener("drop", event => { const zone = event.target.closest("[data-drop-stage]"); if (!zone) return; event.preventDefault(); moveDeal(event.dataTransfer.getData("text/plain"), zone.dataset.dropStage); });
+    document.addEventListener("drop", event => { const zone = event.target.closest("[data-drop-stage]"); if (!zone) return; event.preventDefault(); if (!canEditWorkspace()) return showToast("Sua permissão permite apenas visualizar o CRM"); moveDeal(event.dataTransfer.getData("text/plain"), zone.dataset.dropStage); });
     document.querySelector("#importInput").addEventListener("change", event => { const file = event.target.files[0]; if (file) importJson(file); event.target.value = ""; });
     document.addEventListener("keydown", event => { if (event.key === "Escape") closeAllModals(); });
 
