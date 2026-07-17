@@ -1801,7 +1801,17 @@
         showToast("Mensagem preparada pela IA do Cezar");
       } catch (error) {
         console.error("Cezar AI error", error);
-        showToast(error?.message || "Não foi possível acessar o Cezar com IA");
+        const rawMessage = String(error?.message || "");
+        const normalizedMessage = rawMessage.toLowerCase();
+        if (normalizedMessage.includes("exceeded your current quota") || normalizedMessage.includes("insufficient_quota")) {
+          showToast("O Cezar está conectado, mas a conta da IA está sem saldo. Adicione créditos na OpenAI e tente novamente.");
+        } else if (normalizedMessage.includes("invalid api key") || normalizedMessage.includes("incorrect api key")) {
+          showToast("A chave da IA precisa ser atualizada nas configurações seguras do CRM.");
+        } else if (normalizedMessage.includes("rate limit")) {
+          showToast("O Cezar recebeu muitas solicitações agora. Aguarde um instante e tente novamente.");
+        } else {
+          showToast(rawMessage || "Não foi possível acessar o Cezar com IA");
+        }
       } finally {
         cezarBusy = false;
         render();
