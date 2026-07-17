@@ -482,6 +482,7 @@
         <button class="btn primary" id="authSubmit" type="submit">Entrar</button>
       </form>
       <button class="auth-secondary" type="button" data-action="toggle-auth-mode" id="authToggle" hidden>Recebeu um convite? Criar conta</button>
+      <button class="auth-secondary" type="button" data-action="cancel-invite" id="authCancelInvite" hidden>Cancelar convite e entrar em outra conta</button>
       <button class="auth-secondary" type="button" data-action="request-password-reset" id="authForgot">Esqueci minha senha</button>
       <button class="auth-secondary" type="button" data-action="backup">Baixar cópia dos dados deste navegador</button>
       <div class="auth-status" id="authStatus" role="status"></div>
@@ -908,6 +909,7 @@
       document.querySelector("#authSubtitle").textContent = recovery ? "Defina uma nova senha para recuperar seu acesso ao CRM." : (register ? `Crie sua conta para entrar na ${invitePreview?.workspace_name || "VERTA"}.` : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.");
       document.querySelector("#authSubmit").textContent = recovery ? "Salvar nova senha" : (register ? "Criar conta" : "Entrar");
       document.querySelector("#authToggle").hidden = recovery || !inviteToken;
+      document.querySelector("#authCancelInvite").hidden = recovery || !inviteToken;
       document.querySelector("#authToggle").textContent = register ? "Já tem uma conta? Entrar" : "Recebeu um convite? Criar conta";
       document.querySelector("#authRegisterFields").hidden = !register;
       document.querySelector("#authFirstName").required = register;
@@ -919,10 +921,13 @@
       document.querySelector("#authConfirmPassword").required = recovery;
       document.querySelector("#authForgot").textContent = recovery ? "Voltar para entrar" : "Esqueci minha senha";
       document.querySelector("#authPassword").autocomplete = register || recovery ? "new-password" : "current-password";
-      if (invitePreview?.email) {
+      if (register && invitePreview?.email) {
         document.querySelector("#authEmail").value = invitePreview.email;
         document.querySelector("#authEmail").readOnly = true;
-      } else document.querySelector("#authEmail").readOnly = false;
+      } else {
+        document.querySelector("#authEmail").readOnly = false;
+        if (invitePreview?.email && document.querySelector("#authEmail").value === invitePreview.email) document.querySelector("#authEmail").value = "";
+      }
       setAuthStatus();
     }
 
@@ -970,12 +975,24 @@
       if (window.history?.replaceState) window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    function cancelInviteAccess() {
+      clearInviteFromBrowser();
+      setAuthMode("login");
+      updateMigrationNotice();
+      setAuthStatus("Convite removido deste navegador. Entre com sua conta normalmente.", "success");
+    }
+
     async function loadWorkspaceContext() {
       if (!supabaseClient || !authUser) throw new Error("Conta não autenticada");
       if (inviteToken) {
-        const { error: claimError } = await supabaseClient.rpc("claim_workspace_invite", { p_token: inviteToken });
-        if (claimError) throw claimError;
-        clearInviteFromBrowser();
+        const invitedEmail = invitePreview?.email?.trim().toLowerCase();
+        const signedEmail = authUser.email?.trim().toLowerCase();
+        if (invitedEmail && signedEmail && invitedEmail !== signedEmail) clearInviteFromBrowser();
+        else {
+          const { error: claimError } = await supabaseClient.rpc("claim_workspace_invite", { p_token: inviteToken });
+          if (claimError) throw claimError;
+          clearInviteFromBrowser();
+        }
       }
       await supabaseClient.rpc("touch_workspace_presence");
       const { data, error } = await supabaseClient.rpc("get_workspace_context");
@@ -2175,6 +2192,7 @@
       if (!canEditWorkspace() && editActions.has(action)) return showToast("Sua permissão permite apenas visualizar o CRM");
       if (action === "toggle-menu") document.querySelector("#sidebar").classList.toggle("open");
       if (action === "toggle-auth-mode") setAuthMode(authMode === "login" ? "register" : "login");
+      if (action === "cancel-invite") cancelInviteAccess();
       if (action === "request-password-reset") requestPasswordReset();
       if (action === "sync-now") syncNow();
       if (action === "logout") logout();
