@@ -759,6 +759,7 @@
     let materialTab = "metodo";
     let prospectingQuery = { segment: "", city: "" };
     let cezarDraft = { recordId: "", intent: "Primeiro contato", instruction: "", text: "" };
+    let cezarBusy = false;
     let pendingMessageId = null;
     let toastTimer;
     let supabaseClient = null;
@@ -1347,7 +1348,7 @@
       const recommendation = cezarRecommendation(selected);
       const queue = [...state.messages].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
       return `
-        <section class="card cezar-header"><div class="cezar-avatar">CZ</div><div><h2>Cezar · Secretaria Comercial VERTA</h2><p>Prepara mensagens com o repertório da VERTA, usa os dados do CRM e registra cada autorização. Ele nunca escolhe um número fora da sua base.</p></div><div class="status-line"><span class="status-dot"></span>Modo assistido</div></section>
+        <section class="card cezar-header"><div class="cezar-avatar">CZ</div><div><h2>Cezar · Secretaria Comercial VERTA</h2><p>Prepara mensagens com o repertório da VERTA, usa os dados do CRM e registra cada autorização. Ele nunca escolhe um número fora da sua base.</p></div><div class="status-line"><span class="status-dot"></span>IA com aprovação humana</div></section>
         <div class="assistant-grid">
           <section class="card card-pad">
             <div class="section-head"><div><p class="section-kicker">Nova solicitação</p><h2>O que o Cezar deve preparar?</h2><p>Escolha um contato cadastrado e a finalidade. O texto pode ser ajustado antes da revisão.</p></div></div>
@@ -1356,13 +1357,13 @@
               <div class="recommendation"><strong>${escapeHtml(recommendation.title)}</strong>${escapeHtml(recommendation.reason)}</div>
               <div class="field"><label>Informação específica para esta mensagem</label><textarea id="cezarInstruction" name="instruction" placeholder="Ex.: boleto de julho vence dia 20; reunião mudou para quinta às 14h; comentar que o perfil não tem CTA.">${escapeHtml(cezarDraft.instruction)}</textarea></div>
               <div class="field"><label>Rascunho preparado</label><textarea id="cezarText" name="text">${escapeHtml(cezarDraft.text || generateCezarMessage(selected, cezarDraft.intent, cezarDraft.instruction))}</textarea></div>
-              <div class="button-row"><button class="btn" type="button" data-action="generate-cezar">Gerar nova sugestão</button><button class="btn" type="button" data-action="copy-cezar">Copiar</button><button class="btn primary" type="submit">Revisar e autorizar</button></div>
+              <div class="button-row"><button class="btn" type="button" data-action="generate-cezar" ${cezarBusy ? "disabled" : ""}>${cezarBusy ? "Cezar está escrevendo..." : "Cezar IA: gerar mensagem"}</button><button class="btn" type="button" data-action="copy-cezar">Copiar</button><button class="btn primary" type="submit">Revisar e autorizar</button></div>
             </form>` : `<div class="empty"><strong>O Cezar precisa de um contato cadastrado</strong>Adicione um lead, oportunidade ou cliente com WhatsApp antes de solicitar uma mensagem.<br><button class="btn primary" type="button" data-action="new-lead" style="margin-top:12px">+ Novo contato</button></div>`}
           </section>
           <aside class="card card-pad">
             <div class="section-head"><div><p class="section-kicker">Repertório aplicado</p><h2>Como o Cezar decide</h2><p>Ele combina finalidade, etapa, serviço, histórico e sua instrução.</p></div></div>
             <div class="list"><div class="list-item"><div><p class="item-title">Primeiro contato</p><p class="item-meta">Observação real, apresentação curta e uma pergunta de diagnóstico.</p></div></div><div class="list-item"><div><p class="item-title">Follow-up</p><p class="item-meta">Retoma o ponto pendente e pede um próximo passo objetivo.</p></div></div><div class="list-item"><div><p class="item-title">Cobrança e aviso</p><p class="item-meta">Tom respeitoso, referência clara e espaço para correção.</p></div></div><div class="list-item"><div><p class="item-title">Reativação</p><p class="item-meta">Reconhece o tempo passado e verifica se a prioridade mudou.</p></div></div></div>
-            <div class="notice" style="margin-top:14px"><b>Limite atual:</b> esta versão prepara e abre a conversa pelo WhatsApp. Envio automático real e leitura de respostas exigem backend seguro e conexão oficial com a WhatsApp Business Platform.</div>
+            <div class="notice" style="margin-top:14px"><b>Controle obrigatório:</b> a IA prepara o texto, mas não envia mensagens. Você revisa o destinatário e o conteúdo antes de o CRM abrir o WhatsApp.</div>
           </aside>
         </div>
         <section class="card card-pad" style="margin-top:14px">
@@ -1763,12 +1764,48 @@
       cezarDraft = { recordId: data.recordId, intent: data.intent, instruction: data.instruction.trim(), text: data.text.trim() };
       return cezarDraft;
     }
-    function regenerateCezarDraft() {
+    async function regenerateCezarDraft() {
       const draft = readCezarForm();
       if (!draft) return;
-      draft.text = generateCezarMessage(relatedRecord(draft.recordId), draft.intent, draft.instruction);
+      const record = relatedRecord(draft.recordId);
+      if (!record) return showToast("Selecione um contato cadastrado");
+      if (!supabaseClient || !authUser) return showToast("Entre na sua conta para usar o Cezar com IA");
+      const history = state.activities
+        .filter(item => item.relatedId === record.id)
+        .slice(0, 8)
+        .map(item => ({ kind: item.kind, message: item.message, createdAt: item.createdAt }));
+      cezarBusy = true;
       render();
-      showToast("Nova sugestão preparada pelo Cezar");
+      try {
+        const { data, error } = await supabaseClient.functions.invoke("cezar", {
+          body: {
+            record: {
+              type: recordType(record), company: record.company, contact: record.contact,
+              segment: record.segment, city: record.city, source: record.source,
+              interest: record.interest || record.service, status: record.status,
+              stage: record.stage, nextAction: record.nextAction, nextDate: record.nextDate,
+              notes: record.notes, contactBasis: record.contactBasis
+            },
+            intent: draft.intent,
+            instruction: draft.instruction,
+            history
+          }
+        });
+        if (error) {
+          let detail = "";
+          try { detail = (await error.context?.json())?.error || ""; } catch (_) {}
+          throw new Error(detail || error.message);
+        }
+        if (!data?.text) throw new Error("O Cezar não devolveu uma mensagem válida.");
+        cezarDraft.text = String(data.text).trim();
+        showToast("Mensagem preparada pela IA do Cezar");
+      } catch (error) {
+        console.error("Cezar AI error", error);
+        showToast(error?.message || "Não foi possível acessar o Cezar com IA");
+      } finally {
+        cezarBusy = false;
+        render();
+      }
     }
     function reviewCezarDraft(event) {
       event.preventDefault();
@@ -1904,7 +1941,7 @@
       if (action === "review-message") openMessageApproval(button.dataset.id);
       if (action === "mark-message-sent") markMessageSent(button.dataset.id);
       if (action === "reuse-message") reuseMessage(button.dataset.id);
-      if (action === "generate-cezar") regenerateCezarDraft();
+      if (action === "generate-cezar") void regenerateCezarDraft();
       if (action === "copy-cezar") { readCezarForm(); copyText(cezarDraft.text || ""); }
       if (action === "material-tab") { materialTab = button.dataset.tab; render(); }
       if (action === "backup") backupJson();
