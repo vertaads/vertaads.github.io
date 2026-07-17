@@ -476,11 +476,13 @@
           <div class="field"><label for="authLastName">Sobrenome</label><input id="authLastName" name="lastName" autocomplete="family-name" placeholder="Seu sobrenome"></div>
           <div class="field full"><label for="authPhone">Telefone <span class="muted">(opcional)</span></label><input id="authPhone" name="phone" type="tel" autocomplete="tel" placeholder="(00) 00000-0000"></div>
         </div>
-        <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" name="email" type="email" autocomplete="username" required placeholder="seuemail@exemplo.com"></div>
-        <div class="field"><label for="authPassword">Senha</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="No mínimo 8 caracteres"></div>
+        <div class="field" id="authEmailField"><label for="authEmail">E-mail</label><input id="authEmail" name="email" type="email" autocomplete="username" required placeholder="seuemail@exemplo.com"></div>
+        <div class="field"><label for="authPassword" id="authPasswordLabel">Senha</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="No mínimo 8 caracteres"></div>
+        <div class="field" id="authConfirmPasswordField" hidden><label for="authConfirmPassword">Confirmar nova senha</label><input id="authConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Digite novamente"></div>
         <button class="btn primary" id="authSubmit" type="submit">Entrar</button>
       </form>
       <button class="auth-secondary" type="button" data-action="toggle-auth-mode" id="authToggle" hidden>Recebeu um convite? Criar conta</button>
+      <button class="auth-secondary" type="button" data-action="request-password-reset" id="authForgot">Esqueci minha senha</button>
       <button class="auth-secondary" type="button" data-action="backup">Baixar cópia dos dados deste navegador</button>
       <div class="auth-status" id="authStatus" role="status"></div>
       <div class="auth-migration" id="authMigration">Os dados deste navegador serão preservados e enviados para sua conta no primeiro acesso.</div>
@@ -794,6 +796,7 @@
     let supabaseClient = null;
     let authUser = null;
     let authMode = "login";
+    let passwordRecoveryActive = new URLSearchParams(window.location.hash.replace(/^#/, "")).get("type") === "recovery";
     let inviteToken = new URLSearchParams(window.location.search).get("invite") || localStorage.getItem("verta_crm_invite") || "";
     let invitePreview = null;
     let workspaceContext = null;
@@ -898,22 +901,45 @@
     }
 
     function setAuthMode(mode) {
-      authMode = mode === "register" && inviteToken ? "register" : "login";
+      authMode = mode === "recovery" ? "recovery" : (mode === "register" && inviteToken ? "register" : "login");
       const register = authMode === "register";
-      document.querySelector("#authTitle").textContent = register ? "Aceitar convite" : "Entrar no CRM";
-      document.querySelector("#authSubtitle").textContent = register ? `Crie sua conta para entrar na ${invitePreview?.workspace_name || "VERTA"}.` : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.";
-      document.querySelector("#authSubmit").textContent = register ? "Criar conta" : "Entrar";
-      document.querySelector("#authToggle").hidden = !inviteToken;
+      const recovery = authMode === "recovery";
+      document.querySelector("#authTitle").textContent = recovery ? "Criar nova senha" : (register ? "Aceitar convite" : "Entrar no CRM");
+      document.querySelector("#authSubtitle").textContent = recovery ? "Defina uma nova senha para recuperar seu acesso ao CRM." : (register ? `Crie sua conta para entrar na ${invitePreview?.workspace_name || "VERTA"}.` : "Acesse contatos, oportunidades, tarefas e o Cezar em qualquer dispositivo.");
+      document.querySelector("#authSubmit").textContent = recovery ? "Salvar nova senha" : (register ? "Criar conta" : "Entrar");
+      document.querySelector("#authToggle").hidden = recovery || !inviteToken;
       document.querySelector("#authToggle").textContent = register ? "Já tem uma conta? Entrar" : "Recebeu um convite? Criar conta";
       document.querySelector("#authRegisterFields").hidden = !register;
       document.querySelector("#authFirstName").required = register;
       document.querySelector("#authLastName").required = register;
-      document.querySelector("#authPassword").autocomplete = register ? "new-password" : "current-password";
+      document.querySelector("#authEmailField").hidden = recovery;
+      document.querySelector("#authEmail").required = !recovery;
+      document.querySelector("#authPasswordLabel").textContent = recovery ? "Nova senha" : "Senha";
+      document.querySelector("#authConfirmPasswordField").hidden = !recovery;
+      document.querySelector("#authConfirmPassword").required = recovery;
+      document.querySelector("#authForgot").textContent = recovery ? "Voltar para entrar" : "Esqueci minha senha";
+      document.querySelector("#authPassword").autocomplete = register || recovery ? "new-password" : "current-password";
       if (invitePreview?.email) {
         document.querySelector("#authEmail").value = invitePreview.email;
         document.querySelector("#authEmail").readOnly = true;
       } else document.querySelector("#authEmail").readOnly = false;
       setAuthStatus();
+    }
+
+    async function requestPasswordReset() {
+      if (authMode === "recovery") {
+        passwordRecoveryActive = false;
+        setAuthMode("login");
+        return;
+      }
+      if (!supabaseClient) return setAuthStatus("A conexão segura ainda não carregou.", "error");
+      const email = document.querySelector("#authEmail").value.trim();
+      if (!email) return setAuthStatus("Informe o e-mail da conta para recuperar a senha.", "error");
+      setAuthStatus("Enviando link de recuperação...");
+      const redirectTo = `${window.location.origin}${window.location.pathname}`;
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) return setAuthStatus(error.message || "Não foi possível enviar o link.", "error");
+      setAuthStatus("Link enviado. Abra apenas o e-mail mais recente.", "success");
     }
 
     function canManageTeam() { return ["owner", "admin"].includes(activeMembership?.role); }
@@ -1117,9 +1143,17 @@
       const data = Object.fromEntries(new FormData(form).entries());
       const submit = document.querySelector("#authSubmit");
       submit.disabled = true;
-      setAuthStatus(authMode === "register" ? "Criando sua conta..." : "Validando acesso...");
+      setAuthStatus(authMode === "recovery" ? "Salvando nova senha..." : (authMode === "register" ? "Criando sua conta..." : "Validando acesso..."));
       try {
-        if (authMode === "register") {
+        if (authMode === "recovery") {
+          if (data.password !== data.confirmPassword) throw new Error("As senhas não coincidem.");
+          const { error } = await supabaseClient.auth.updateUser({ password: data.password });
+          if (error) throw error;
+          passwordRecoveryActive = false;
+          setAuthStatus("Senha atualizada. Carregando o CRM...", "success");
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          await applySession(sessionData.session);
+        } else if (authMode === "register") {
           if (!inviteToken) throw new Error("É necessário receber um convite da VERTA para criar a conta.");
           const redirectUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(inviteToken)}`;
           const { data: result, error } = await supabaseClient.auth.signUp({
@@ -1163,10 +1197,18 @@
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       await loadInvitePreview();
-      supabaseClient.auth.onAuthStateChange((_event, session) => setTimeout(() => applySession(session), 0));
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          passwordRecoveryActive = true;
+          setTimeout(() => { setAuthMode("recovery"); showAuthShell(); }, 0);
+          return;
+        }
+        if (!passwordRecoveryActive) setTimeout(() => applySession(session), 0);
+      });
       const { data, error } = await supabaseClient.auth.getSession();
       if (error) return setAuthStatus(error.message, "error");
-      await applySession(data.session);
+      if (passwordRecoveryActive) { setAuthMode("recovery"); showAuthShell(); }
+      else await applySession(data.session);
     }
     function uid(prefix = "id") { return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`; }
     function localDate(date = new Date()) { const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return shifted.toISOString().slice(0, 10); }
@@ -2133,6 +2175,7 @@
       if (!canEditWorkspace() && editActions.has(action)) return showToast("Sua permissão permite apenas visualizar o CRM");
       if (action === "toggle-menu") document.querySelector("#sidebar").classList.toggle("open");
       if (action === "toggle-auth-mode") setAuthMode(authMode === "login" ? "register" : "login");
+      if (action === "request-password-reset") requestPasswordReset();
       if (action === "sync-now") syncNow();
       if (action === "logout") logout();
       if (action === "view") setView(button.dataset.view);
