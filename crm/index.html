@@ -1348,7 +1348,7 @@
       const recommendation = cezarRecommendation(selected);
       const queue = [...state.messages].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
       return `
-        <section class="card cezar-header"><div class="cezar-avatar">CZ</div><div><h2>Cezar · Secretaria Comercial VERTA</h2><p>Prepara mensagens com o repertório da VERTA, usa os dados do CRM e registra cada autorização. Se a IA estiver indisponível, continua funcionando no modo local gratuito.</p></div><div class="status-line"><span class="status-dot"></span>Modo local + IA opcional</div></section>
+        <section class="card cezar-header"><div class="cezar-avatar">CZ</div><div><h2>Cezar · Secretaria Comercial VERTA</h2><p>Prepara mensagens com o repertório da VERTA, usa os dados do CRM e registra cada autorização. Ele nunca escolhe um número fora da sua base.</p></div><div class="status-line"><span class="status-dot"></span>IA com aprovação humana</div></section>
         <div class="assistant-grid">
           <section class="card card-pad">
             <div class="section-head"><div><p class="section-kicker">Nova solicitação</p><h2>O que o Cezar deve preparar?</h2><p>Escolha um contato cadastrado e a finalidade. O texto pode ser ajustado antes da revisão.</p></div></div>
@@ -1357,7 +1357,7 @@
               <div class="recommendation"><strong>${escapeHtml(recommendation.title)}</strong>${escapeHtml(recommendation.reason)}</div>
               <div class="field"><label>Informação específica para esta mensagem</label><textarea id="cezarInstruction" name="instruction" placeholder="Ex.: boleto de julho vence dia 20; reunião mudou para quinta às 14h; comentar que o perfil não tem CTA.">${escapeHtml(cezarDraft.instruction)}</textarea></div>
               <div class="field"><label>Rascunho preparado</label><textarea id="cezarText" name="text">${escapeHtml(cezarDraft.text || generateCezarMessage(selected, cezarDraft.intent, cezarDraft.instruction))}</textarea></div>
-              <div class="button-row"><button class="btn" type="button" data-action="generate-cezar" ${cezarBusy ? "disabled" : ""}>${cezarBusy ? "Cezar está escrevendo..." : "Cezar: gerar mensagem"}</button><button class="btn" type="button" data-action="copy-cezar">Copiar</button><button class="btn primary" type="submit">Revisar e autorizar</button></div>
+              <div class="button-row"><button class="btn" type="button" data-action="generate-cezar" ${cezarBusy ? "disabled" : ""}>${cezarBusy ? "Cezar está escrevendo..." : "Cezar IA: gerar mensagem"}</button><button class="btn" type="button" data-action="copy-cezar">Copiar</button><button class="btn primary" type="submit">Revisar e autorizar</button></div>
             </form>` : `<div class="empty"><strong>O Cezar precisa de um contato cadastrado</strong>Adicione um lead, oportunidade ou cliente com WhatsApp antes de solicitar uma mensagem.<br><button class="btn primary" type="button" data-action="new-lead" style="margin-top:12px">+ Novo contato</button></div>`}
           </section>
           <aside class="card card-pad">
@@ -1803,15 +1803,14 @@
         console.error("Cezar AI error", error);
         const rawMessage = String(error?.message || "");
         const normalizedMessage = rawMessage.toLowerCase();
-        cezarDraft.text = generateCezarMessage(record, draft.intent, draft.instruction);
         if (normalizedMessage.includes("exceeded your current quota") || normalizedMessage.includes("insufficient_quota")) {
-          showToast("Cezar usou o modo local gratuito. A IA está sem saldo, mas você pode continuar trabalhando normalmente.");
+          showToast("O Cezar está conectado, mas a conta da IA está sem saldo. Adicione créditos na OpenAI e tente novamente.");
         } else if (normalizedMessage.includes("invalid api key") || normalizedMessage.includes("incorrect api key")) {
-          showToast("Cezar usou o modo local gratuito porque a chave da IA precisa ser atualizada.");
+          showToast("A chave da IA precisa ser atualizada nas configurações seguras do CRM.");
         } else if (normalizedMessage.includes("rate limit")) {
-          showToast("Cezar usou o modo local gratuito porque a IA está temporariamente ocupada.");
+          showToast("O Cezar recebeu muitas solicitações agora. Aguarde um instante e tente novamente.");
         } else {
-          showToast("Cezar usou o modo local gratuito. A IA não respondeu desta vez.");
+          showToast(rawMessage || "Não foi possível acessar o Cezar com IA");
         }
       } finally {
         cezarBusy = false;
